@@ -1,11 +1,40 @@
-import { registerApplication, start } from 'single-spa';
+import { registerApplication, start, setMountMaxTime, setBootstrapMaxTime, setUnmountMaxTime } from 'single-spa';
+
+// Configure global timeout settings - increase bootstrap timeout
+setMountMaxTime(6000, false, 2000); // 6s timeout, don't die on timeout, 2s warnings
+setBootstrapMaxTime(6000, false, 2000); // 6s timeout, don't die on timeout, 2s warnings 
+setUnmountMaxTime(3000, false, 1500); // 3s timeout, don't die on timeout, 1.5s warnings
 
 // Set a flag to indicate root-config has loaded
 window.rootConfigLoaded = true;
 console.log('Root config loaded at:', new Date().toISOString());
 
-// Log Dojo status for debugging
-console.log('Dojo status:', window.__dojoStatus || 'Not available');
+// Function to check if Dojo is available
+function checkDojoAvailability() {
+  console.log('Checking Dojo availability:');
+  console.log('  - window.dojo:', typeof window.dojo);
+  console.log('  - window.dijit:', typeof window.dijit);
+  console.log('  - window.dojoRequire:', typeof window.dojoRequire);
+  console.log('  - window.require:', typeof window.require);
+  
+  return window.dojo || window.require;
+}
+
+// Try to preload Dojo if needed
+function ensureDojoAvailable() {
+  return new Promise((resolve) => {
+    if (checkDojoAvailability()) {
+      console.log('Dojo already available');
+      resolve(true);
+      return;
+    }
+    
+    // If Dojo is not loaded, resolve anyway after a timeout
+    // The application will handle this case with fallback implementation
+    console.warn('Dojo not available, continuing without preloading');
+    setTimeout(() => resolve(false), 200); // Reduce timeout to avoid delaying start()
+  });
+}
 
 // Helper function for handling app loading errors
 function createErrorApp(appName, error) {
@@ -41,64 +70,103 @@ function createErrorApp(appName, error) {
 
 // Check if Dojo is available and log the status
 const isDojoAvailable = () => {
-  if (window.__dojoStatus && window.__dojoStatus.widgetsReady) {
-    console.log('Dojo is available, all applications can be loaded');
-    return true;
-  }
-  console.warn('Dojo not fully loaded, some applications may have limited functionality');
-  return false;
+  return !!window.dojo || !!window.require;
 };
 
-// Register the Dojo application
+// Register the Dojo application - do this immediately, don't wait for DOM
 console.log('Registering Dojo application');
 registerApplication({
   name: 'dojo-app',
   app: () => import('./app/modules/dojo-app.js')
     .catch(error => createErrorApp('Dojo Application', error)),
-  activeWhen: (location) => location.hash.startsWith('#/dojo') || location.hash === '' || location.hash === '#/',
-  customProps: { isDojoAvailable: isDojoAvailable() }
+  activeWhen: location => location.pathname.startsWith('/dojo-app') || location.hash.startsWith('#/dojo') || location.hash === '' || location.hash === '#/',
+  customProps: { 
+    domElementGetter: () => document.getElementById('app'), // Use a function to get the element when needed
+    isDojoAvailable: isDojoAvailable() 
+  }
 });
 
 // Register the Simple React application
 console.log('Registering Simple React application');
 registerApplication({
-  name: 'simple-react',
+  name: 'simple-react-app',
   app: () => import('./app/modules/simple-react-app.js')
     .catch(error => createErrorApp('Simple React Application', error)),
-  activeWhen: (location) => location.hash.startsWith('#/simple-react'),
-});
-
-// Register the Hybrid React+Dojo application
-console.log('Registering Hybrid React+Dojo application');
-registerApplication({
-  name: 'hybrid-react',
-  app: () => import('./app/modules/hybrid-react-app.js')
-    .catch(error => createErrorApp('Hybrid React+Dojo Application', error)),
-  activeWhen: (location) => location.hash.startsWith('#/hybrid-react'),
-  customProps: { isDojoAvailable: isDojoAvailable() }
-});
-
-// Add navigation event listener to update active class
-window.addEventListener('single-spa:routing-event', () => {
-  // Update active navigation link
-  document.querySelectorAll('nav a').forEach(link => {
-    link.classList.remove('active');
-    const linkPath = link.getAttribute('href');
-    if (window.location.hash.startsWith(linkPath)) {
-      link.classList.add('active');
-    }
-  });
-});
-
-// Default route
-window.addEventListener('single-spa:no-app-change', () => {
-  if (location.hash === '' || location.hash === '#') {
-    location.hash = '#/dojo';
+  activeWhen: location => location.pathname.startsWith('/simple-react') || location.hash.startsWith('#/simple-react'),
+  customProps: {
+    domElementGetter: () => document.getElementById('app')
   }
 });
 
-// Start the single-spa apps
+// Register the Hybrid React application
+console.log('Registering Hybrid React application');
+registerApplication({
+  name: 'hybrid-react-app',
+  app: () => import('./app/modules/hybrid-react-app.js')
+    .catch(error => createErrorApp('Hybrid React Application', error)),
+  activeWhen: location => location.pathname.startsWith('/hybrid-react') || location.hash.startsWith('#/hybrid-react'),
+  customProps: {
+    domElementGetter: () => document.getElementById('app'),
+    isDojoAvailable: isDojoAvailable()
+  }
+});
+
+// IMPORTANT: Call start() immediately, as required by single-spa
 console.log('Starting single-spa applications');
 start({
   urlRerouteOnly: true,
-}); 
+});
+
+// Wait for DOM to be ready for any DOM-dependent operations
+document.addEventListener('DOMContentLoaded', () => {
+  console.log('DOM loaded, ensuring prerequisites');
+  
+  // Run any DOM-dependent code here
+  // But don't delay the single-spa start() call
+  ensureDojoAvailable().then((available) => {
+    console.log('Dojo availability check complete:', available ? 'Available' : 'Not available');
+  });
+});
+
+// Add debugging to help troubleshoot Dojo loading issues
+window.addEventListener('single-spa:before-mount-routing-event', () => {
+  console.log('single-spa: before mount routing event');
+});
+
+window.addEventListener('single-spa:routing-event', () => {
+  console.log('single-spa: routing event');
+});
+
+window.addEventListener('single-spa:app-change', (evt) => {
+  console.log('single-spa: app change', evt.detail);
+});
+
+window.addEventListener('single-spa:no-app-change', () => {
+  console.log('single-spa: no app change');
+});
+
+// Add a global error handler for uncaught errors
+window.addEventListener('error', (event) => {
+  console.error('Global error caught by single-spa:', event.error);
+});
+
+// Handle unhandled promise rejections
+window.addEventListener('unhandledrejection', (event) => {
+  console.error('Unhandled promise rejection caught by single-spa:', event.reason);
+});
+
+// Debug function to check Dojo availability
+window.checkDojoStatus = () => {
+  console.log('Dojo availability check:');
+  console.log('  - window.dojo:', typeof window.dojo, window.dojo ? 'Available' : 'Not available');
+  console.log('  - window.dijit:', typeof window.dijit, window.dijit ? 'Available' : 'Not available');
+  console.log('  - window.dojoRequire:', typeof window.dojoRequire, window.dojoRequire ? 'Available' : 'Not available');
+  
+  if (window.dojo) {
+    console.log('  - Dojo version:', window.dojo.version ? window.dojo.version.toString() : 'Unknown');
+  }
+  
+  if (window.require && window.require.rawConfig) {
+    console.log('  - AMD loader config:', window.require.rawConfig);
+  }
+}; 

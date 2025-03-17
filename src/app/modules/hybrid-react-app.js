@@ -209,6 +209,7 @@ const lifecycles = singleSpaReact({
   React,
   ReactDOM,
   rootComponent: HybridReactApp,
+  domElementGetter: props => props.domElementGetter(),
   errorBoundary(err, info, props) {
     return (
       <div className="error-boundary" style={{ padding: '20px', backgroundColor: '#ffebee', borderRadius: '5px', color: '#d32f2f', maxWidth: '800px', margin: '0 auto' }}>

@@ -55,7 +55,7 @@ module.exports = {
       directory: path.join(__dirname, 'dist'),
     },
     compress: true,
-    port: 9000,
+    port: 9001,
     headers: {
       "Access-Control-Allow-Origin": "*"
     },
