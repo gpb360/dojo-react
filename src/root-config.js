@@ -17,7 +17,30 @@ function checkDojoAvailability() {
   console.log('  - window.dojoRequire:', typeof window.dojoRequire);
   console.log('  - window.require:', typeof window.require);
   
-  return window.dojo || window.require;
+  // First check if dojo is properly initialized as an object with functions
+  if (window.dojo && typeof window.dojo === 'object') {
+    // Check for a few key functions that should be available in a proper dojo initialization
+    if (typeof window.dojo.ready === 'function' || 
+        typeof window.dojo.byId === 'function' || 
+        typeof window.dojo.query === 'function') {
+      console.log('  - Properly initialized Dojo detected');
+      return true;
+    }
+  }
+  
+  // Next check for the AMD loader (dojoRequire or require)
+  if (window.dojoRequire && typeof window.dojoRequire === 'function') {
+    console.log('  - dojoRequire function detected');
+    return true;
+  }
+  
+  if (window.require && typeof window.require === 'function') {
+    console.log('  - AMD require function detected');
+    return true;
+  }
+  
+  console.log('  - No properly initialized Dojo detected');
+  return false;
 }
 
 // Try to preload Dojo if needed
@@ -25,8 +48,43 @@ function ensureDojoAvailable() {
   return new Promise((resolve) => {
     if (checkDojoAvailability()) {
       console.log('Dojo already available');
+      
+      // Make sure dojoRequire is set if it's not already but we have require
+      if (!window.dojoRequire && window.require && typeof window.require === 'function') {
+        console.log('Setting window.dojoRequire from window.require');
+        window.dojoRequire = window.require;
+      }
+      
       resolve(true);
       return;
+    }
+    
+    // If dojo global object exists but isn't fully initialized
+    if (window.dojo && typeof window.dojo === 'object' && 
+        !(typeof window.dojo.ready === 'function' || 
+          typeof window.dojo.byId === 'function' || 
+          typeof window.dojo.query === 'function')) {
+      console.log('Dojo object exists but is not fully initialized');
+      
+      // If we have require function available, try to initialize
+      const requireFn = window.dojoRequire || window.require;
+      if (requireFn && typeof requireFn === 'function') {
+        try {
+          console.log('Attempting to initialize Dojo with requireFn');
+          requireFn(['dojo/ready', 'dojo/dom', 'dojo/query'], function(ready, dom, query) {
+            // Assign key functions to dojo global if they don't exist
+            if (!window.dojo.ready && ready) window.dojo.ready = ready;
+            if (!window.dojo.byId && dom && dom.byId) window.dojo.byId = dom.byId;
+            if (!window.dojo.query && query) window.dojo.query = query;
+            
+            console.log('Successfully initialized Dojo');
+            resolve(true);
+          });
+          return;
+        } catch (e) {
+          console.error('Error initializing Dojo:', e);
+        }
+      }
     }
     
     // If Dojo is not loaded, resolve anyway after a timeout
@@ -70,7 +128,18 @@ function createErrorApp(appName, error) {
 
 // Check if Dojo is available and log the status
 const isDojoAvailable = () => {
-  return !!window.dojo || !!window.require;
+  // Check for a properly initialized dojo object with key methods
+  if (window.dojo && typeof window.dojo === 'object') {
+    if (typeof window.dojo.ready === 'function' || 
+        typeof window.dojo.byId === 'function' || 
+        typeof window.dojo.query === 'function') {
+      return true;
+    }
+  }
+  
+  // Check for AMD loader
+  return !!(window.dojoRequire && typeof window.dojoRequire === 'function') || 
+         !!(window.require && typeof window.require === 'function');
 };
 
 // Register the Dojo application - do this immediately, don't wait for DOM
@@ -161,12 +230,40 @@ window.checkDojoStatus = () => {
   console.log('  - window.dojo:', typeof window.dojo, window.dojo ? 'Available' : 'Not available');
   console.log('  - window.dijit:', typeof window.dijit, window.dijit ? 'Available' : 'Not available');
   console.log('  - window.dojoRequire:', typeof window.dojoRequire, window.dojoRequire ? 'Available' : 'Not available');
+  console.log('  - window.require:', typeof window.require, window.require ? 'Available' : 'Not available');
   
-  if (window.dojo) {
-    console.log('  - Dojo version:', window.dojo.version ? window.dojo.version.toString() : 'Unknown');
+  // Check if dojo is properly initialized
+  if (window.dojo && typeof window.dojo === 'object') {
+    console.log('  - Dojo object properties:');
+    console.log('    - dojo.ready:', typeof window.dojo.ready);
+    console.log('    - dojo.byId:', typeof window.dojo.byId);
+    console.log('    - dojo.query:', typeof window.dojo.query);
+    console.log('    - dojo.version:', window.dojo.version ? window.dojo.version.toString() : 'Unknown');
+    
+    // Check if it appears to be properly initialized
+    const isProperlyInitialized = typeof window.dojo.ready === 'function' || 
+                                  typeof window.dojo.byId === 'function' || 
+                                  typeof window.dojo.query === 'function';
+    console.log('  - Dojo properly initialized:', isProperlyInitialized ? 'Yes' : 'No');
   }
   
-  if (window.require && window.require.rawConfig) {
-    console.log('  - AMD loader config:', window.require.rawConfig);
+  // Check AMD loader
+  if (window.dojoRequire && typeof window.dojoRequire === 'function') {
+    console.log('  - dojoRequire is a function');
+    
+    if (window.dojoRequire.rawConfig) {
+      console.log('  - dojoRequire config:', window.dojoRequire.rawConfig);
+    }
   }
+  
+  if (window.require && typeof window.require === 'function') {
+    console.log('  - require is a function');
+    
+    if (window.require.rawConfig) {
+      console.log('  - require config:', window.require.rawConfig);
+    }
+  }
+  
+  // Overall status
+  console.log('  - Overall Dojo availability:', isDojoAvailable() ? 'Available' : 'Not available');
 }; 

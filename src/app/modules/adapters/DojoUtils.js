@@ -27,9 +27,31 @@ export function ensureDojo() {
 
     // Function to get the appropriate require function
     const getDojoRequire = () => {
-      if (window.dojoRequire) return window.dojoRequire;
-      if (window.require) return window.require;
-      if (window.dojo && window.dojo.require) return window.dojo.require;
+      // First check for explicit dojoRequire
+      if (window.dojoRequire && typeof window.dojoRequire === 'function') {
+        return window.dojoRequire;
+      }
+      
+      // Next check for standard require (AMD loader)
+      if (window.require && typeof window.require === 'function') {
+        // If dojoRequire isn't set, set it
+        if (!window.dojoRequire) {
+          console.log('Setting window.dojoRequire from window.require');
+          window.dojoRequire = window.require;
+        }
+        return window.require;
+      }
+      
+      // Finally check for dojo.require (older pattern)
+      if (window.dojo && typeof window.dojo === 'object' && typeof window.dojo.require === 'function') {
+        // If dojoRequire isn't set, set it
+        if (!window.dojoRequire) {
+          console.log('Setting window.dojoRequire from dojo.require');
+          window.dojoRequire = window.dojo.require;
+        }
+        return window.dojo.require;
+      }
+      
       return null;
     };
 
@@ -55,7 +77,8 @@ export function ensureDojo() {
       document.removeEventListener('dojo-ready', readyHandler);
       
       // Check if we have any kind of require function to work with
-      if (getDojoRequire()) {
+      const require = getDojoRequire();
+      if (require) {
         console.log('Found dojo require function despite timeout, proceeding');
         resolve();
       } else {
@@ -126,8 +149,38 @@ export function createDojoWidget(widgetType, props, domNode) {
       }
     }
 
+    // Get the appropriate require function
+    const getDojoRequire = () => {
+      // First check for explicit dojoRequire
+      if (window.dojoRequire && typeof window.dojoRequire === 'function') {
+        return window.dojoRequire;
+      }
+      
+      // Next check for standard require (AMD loader)
+      if (window.require && typeof window.require === 'function') {
+        // If dojoRequire isn't set, set it
+        if (!window.dojoRequire) {
+          console.log('Setting window.dojoRequire from window.require');
+          window.dojoRequire = window.require;
+        }
+        return window.require;
+      }
+      
+      // Finally check for dojo.require (older pattern)
+      if (window.dojo && typeof window.dojo === 'object' && typeof window.dojo.require === 'function') {
+        // If dojoRequire isn't set, set it
+        if (!window.dojoRequire) {
+          console.log('Setting window.dojoRequire from dojo.require');
+          window.dojoRequire = window.dojo.require;
+        }
+        return window.dojo.require;
+      }
+      
+      return null;
+    };
+
     // Fallback approach using dojoRequire
-    const dojoRequire = window.dojoRequire || window.require;
+    const dojoRequire = getDojoRequire();
     if (!dojoRequire) {
       reject(new Error('No Dojo require function available'));
       return;
