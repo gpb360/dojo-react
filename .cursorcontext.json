@@ -1,0 +1,264 @@
+{
+  "project_metadata": {
+    "name": "dojo-to-react-migration",
+    "description": "A migration example from Dojo to React using single-spa microfrontend architecture",
+    "version": "1.0.0",
+    "architecture": "Microfrontend",
+    "framework": ["React", "Dojo"],
+    "build_tool": "Webpack",
+    "main_technologies": ["single-spa", "React", "Dojo", "Webpack"]
+  },
+  "directory_structure": {
+    "root": {
+      "description": "Project root containing configuration files and top-level directories",
+      "children": ["src", "css", "js", "dist", "node_modules"]
+    },
+    "src": {
+      "description": "Main source code directory",
+      "children": ["app", "css"]
+    },
+    "src/app": {
+      "description": "Application core directory",
+      "children": ["modules"]
+    },
+    "src/app/modules": {
+      "description": "Module specific implementations",
+      "children": ["adapters", "components"]
+    }
+  },
+  "key_files": {
+    "index.html": {
+      "description": "Entry HTML file that loads all necessary scripts and styles",
+      "purpose": "Serves as the container for the single-spa applications"
+    },
+    "package.json": {
+      "description": "NPM package configuration",
+      "purpose": "Defines dependencies, scripts, and project metadata"
+    },
+    "webpack.config.js": {
+      "description": "Webpack configuration",
+      "purpose": "Configures build process, entry points, and output"
+    },
+    "src/root-config.js": {
+      "description": "Root configuration for single-spa",
+      "purpose": "Registers and configures the microfrontend applications"
+    },
+    "src/app/main.js": {
+      "description": "Main application script",
+      "purpose": "Initializes the core application functionality"
+    }
+  },
+  "applications": {
+    "dojo-app": {
+      "description": "Pure Dojo implementation of the task manager",
+      "entry_point": "src/app/modules/dojo-app.js",
+      "route": "#/dojo",
+      "implementation": "Pure JavaScript implementation that manually creates and manipulates DOM elements",
+      "features": ["Task list", "Add task", "Delete task", "Mark task as complete"],
+      "dependencies": [],
+      "state_management": "DOM-based state management"
+    },
+    "simple-react-app": {
+      "description": "Pure React implementation of the task manager",
+      "entry_point": "src/app/modules/simple-react-app.js",
+      "route": "#/simple-react",
+      "implementation": "React functional components with hooks",
+      "features": ["Task list", "Add task"],
+      "dependencies": ["React", "ReactDOM", "single-spa-react"],
+      "state_management": "React useState hook"
+    },
+    "hybrid-react-app": {
+      "description": "Hybrid implementation that uses React with Dojo-styled widgets",
+      "entry_point": "src/app/modules/hybrid-react-app.js",
+      "route": ["#/hybrid-react", "#/react", "#/hybrid"],
+      "implementation": "React functional components with HTML-based Dojo widget adapters",
+      "features": ["Task list", "Add task", "Mark task as complete"],
+      "dependencies": ["React", "ReactDOM", "single-spa-react", "DojoReactAdapter"],
+      "state_management": "React useState hook"
+    }
+  },
+  "components": {
+    "TaskItem": {
+      "file": "src/app/modules/components/TaskItem.jsx",
+      "description": "A component that displays a single task item with checkbox and delete button",
+      "props": {
+        "task": "The task object to display",
+        "onDelete": "Function to call when delete button is clicked",
+        "useDojo": "Boolean flag to use Dojo checkbox instead of HTML checkbox"
+      },
+      "state": {
+        "isCompleted": "Tracks whether the task is completed"
+      },
+      "handlers": {
+        "handleCheckboxChange": "Handles changes to the checkbox state"
+      },
+      "natural_language_explanation": "TaskItem is a reusable component that renders a single task with a checkbox to mark it complete and a delete button. It can optionally use a Dojo checkbox adapter if useDojo is true."
+    },
+    "TaskInput": {
+      "file": "src/app/modules/components/TaskInput.jsx",
+      "description": "A component that provides an input form for adding new tasks",
+      "props": {
+        "onAddTask": "Function to call when a new task is submitted"
+      },
+      "state": {
+        "taskText": "The current text in the input field"
+      },
+      "handlers": {
+        "handleSubmit": "Handles form submission"
+      },
+      "natural_language_explanation": "TaskInput is a form component with a text input and submit button that allows users to add new tasks to the task list."
+    },
+    "DojoButtonAdapter": {
+      "file": "src/app/modules/adapters/DojoReactAdapter.js",
+      "description": "HTML implementation of a Dojo-styled button for React",
+      "props": {
+        "label": "Text to display on the button",
+        "onClick": "Function to call when button is clicked",
+        "style": "Additional styling for the button"
+      },
+      "natural_language_explanation": "DojoButtonAdapter is an HTML-based implementation of a Dojo button that can be used within React components. It styles a standard HTML button to look like a Dojo dijit button."
+    },
+    "DojoTextBoxAdapter": {
+      "file": "src/app/modules/adapters/DojoReactAdapter.js",
+      "description": "HTML implementation of a Dojo-styled text input for React",
+      "props": {
+        "value": "The current value of the input",
+        "onChange": "Function to call when input value changes",
+        "style": "Additional styling for the input"
+      },
+      "natural_language_explanation": "DojoTextBoxAdapter creates an HTML input that is styled to resemble a Dojo dijit TextBox, making it usable within React components while maintaining visual consistency."
+    },
+    "DojoCheckBoxAdapter": {
+      "file": "src/app/modules/adapters/DojoReactAdapter.js",
+      "description": "HTML implementation of a Dojo-styled checkbox for React",
+      "props": {
+        "checked": "Whether the checkbox is checked",
+        "onChange": "Function to call when checkbox state changes",
+        "style": "Additional styling for the checkbox"
+      },
+      "natural_language_explanation": "DojoCheckBoxAdapter wraps a standard HTML checkbox with additional styling to make it look like a Dojo dijit CheckBox while remaining usable within React components."
+    },
+    "DojoErrorBoundary": {
+      "file": "src/app/modules/adapters/DojoReactAdapter.js",
+      "description": "Error boundary component to catch errors in React components",
+      "props": {
+        "children": "React components to wrap with error handling"
+      },
+      "state": {
+        "hasError": "Whether an error has occurred",
+        "error": "The error object if an error has occurred"
+      },
+      "natural_language_explanation": "DojoErrorBoundary is a React error boundary component that catches errors within its child components and displays a styled error message instead of crashing the application."
+    },
+    "HybridReactApp": {
+      "file": "src/app/modules/hybrid-react-app.js",
+      "description": "Main component for the hybrid React/Dojo application",
+      "props": {
+        "name": "The name of the application"
+      },
+      "state": {
+        "text": "The current text in the input field",
+        "items": "Array of tasks",
+        "completed": "Array of completed task indices"
+      },
+      "handlers": {
+        "handleAddItem": "Adds a new item to the task list",
+        "toggleCompleted": "Toggles completion status of a task"
+      },
+      "natural_language_explanation": "HybridReactApp is the main React component for the hybrid application. It demonstrates using Dojo-styled components like buttons, text inputs, and checkboxes within a React interface to create a task management application."
+    }
+  },
+  "features": {
+    "task_management": {
+      "description": "Core task management functionality",
+      "components": ["TaskItem", "TaskInput", "HybridReactApp"],
+      "entry_points": ["src/app/modules/hybrid-react-app.js", "src/app/modules/dojo-app.js", "src/app/modules/simple-react-app.js"],
+      "workflow": "User enters a task in the input field, clicks Add Task, and the task appears in the list. Users can then mark tasks as complete or delete them.",
+      "state_management": "Each application implements its own state management - React using useState hooks, Dojo using DOM manipulation",
+      "error_states": "Empty task input, Dojo widget loading errors",
+      "loading_states": "Application loading, Dojo initialization"
+    },
+    "dojo_integration": {
+      "description": "Integration of Dojo widgets into React application",
+      "components": ["DojoButtonAdapter", "DojoTextBoxAdapter", "DojoCheckBoxAdapter", "DojoErrorBoundary"],
+      "entry_points": ["src/app/modules/adapters/DojoReactAdapter.js"],
+      "workflow": "React components use the Dojo-styled adapter components which render HTML elements styled to look like Dojo widgets",
+      "state_management": "React state management with Dojo-styled UI components",
+      "error_states": "Widget creation errors, module loading errors",
+      "loading_states": "Dojo initialization, widget rendering"
+    },
+    "microfrontend_architecture": {
+      "description": "Single-spa microfrontend architecture setup",
+      "components": ["root-config"],
+      "entry_points": ["src/root-config.js"],
+      "workflow": "Applications are registered with single-spa and mounted/unmounted based on route changes",
+      "state_management": "Application lifecycle management through single-spa",
+      "error_states": "Application load failures, mounting errors",
+      "loading_states": "Application bootstrapping, mounting"
+    }
+  },
+  "performance_optimizations": {
+    "code_splitting": {
+      "description": "Code splitting via dynamic imports in single-spa",
+      "implementation": "Using import() for lazy loading applications",
+      "benefits": "Reduced initial load time, only loads applications when needed"
+    },
+    "error_boundaries": {
+      "description": "Error boundaries to prevent application crashes",
+      "implementation": "React error boundary components",
+      "benefits": "Prevents the entire application from crashing when a component fails"
+    },
+    "html_based_widgets": {
+      "description": "HTML-based widgets instead of loading actual Dojo widgets",
+      "implementation": "Styled HTML elements that mimic Dojo widgets",
+      "benefits": "Avoids AMD loading complexities, reduces bundle size, improves reliability"
+    }
+  },
+  "security_considerations": {
+    "input_validation": {
+      "description": "Input validation for task data",
+      "implementation": "Basic validation of non-empty input before adding tasks"
+    },
+    "error_handling": {
+      "description": "Error handling and display",
+      "implementation": "React error boundaries, try/catch blocks"
+    }
+  },
+  "code_patterns": {
+    "functional_components": {
+      "description": "React functional components with hooks",
+      "examples": ["HybridReactApp", "TaskItem", "TaskInput"],
+      "benefits": "Simpler code, better performance, hook-based state management"
+    },
+    "adapter_pattern": {
+      "description": "Adapter pattern for integrating Dojo widgets with React",
+      "examples": ["DojoButtonAdapter", "DojoTextBoxAdapter", "DojoCheckBoxAdapter"],
+      "benefits": "Decouples Dojo and React implementations, provides fallback mechanisms"
+    },
+    "error_boundary_pattern": {
+      "description": "Error boundary pattern for handling component errors",
+      "examples": ["DojoErrorBoundary"],
+      "benefits": "Graceful error handling, prevents application crashes"
+    }
+  },
+  "build_configuration": {
+    "webpack": {
+      "entry_point": "src/root-config.js",
+      "output": {
+        "filename": "root-config.js",
+        "path": "dist/",
+        "format": "system"
+      },
+      "loaders": ["babel-loader", "style-loader", "css-loader"],
+      "plugins": ["HtmlWebpackPlugin", "CopyWebpackPlugin"],
+      "externals": ["single-spa", "react", "react-dom", "dojo", "dijit"]
+    },
+    "babel": {
+      "presets": ["@babel/preset-env", "@babel/preset-react"]
+    },
+    "dev_server": {
+      "port": 9000,
+      "features": ["historyApiFallback", "hot module replacement"]
+    }
+  }
+} 

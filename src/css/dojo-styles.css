@@ -1,0 +1,42 @@
+/* Dojo-specific styles */
+.dojo-task-manager {
+  padding: 20px;
+}
+
+.task-item {
+  display: flex;
+  align-items: center;
+  margin: 10px 0;
+  padding: 10px;
+  background: #f8f8f8;
+  border-radius: 4px;
+}
+
+.task-text {
+  margin: 0 10px;
+  flex-grow: 1;
+}
+
+#taskForm {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+#taskInput {
+  flex-grow: 1;
+}
+
+#taskList {
+  list-style: none;
+  padding: 0;
+}
+
+/* Dojo widget overrides */
+.dijitButton {
+  margin-left: 10px;
+}
+
+.dijitCheckBox {
+  margin-right: 8px;
+} 

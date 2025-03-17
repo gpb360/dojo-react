@@ -1,0 +1,88 @@
+/* React-specific styles */
+.react-task-manager {
+  margin-top: 20px;
+}
+
+.task-form {
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+}
+
+.task-input {
+  margin-right: 10px;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  flex-grow: 1;
+}
+
+.task-button {
+  padding: 8px 16px;
+  background-color: #0066cc;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.task-button:hover {
+  background-color: #0055aa;
+}
+
+.task-list {
+  list-style-type: none;
+  padding: 0;
+}
+
+.task-checkbox {
+  margin-right: 10px;
+}
+
+.task-delete-button {
+  padding: 5px 10px;
+  background-color: #ff4444;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.task-delete-button:hover {
+  background-color: #ee3333;
+}
+
+/* Hybrid mode styles */
+.hybrid-manager {
+  margin-top: 20px;
+  border: 1px dashed #ccc;
+  padding: 15px;
+  background-color: #f9f9f9;
+}
+
+.controls {
+  margin-bottom: 15px;
+}
+
+.controls button {
+  margin-right: 10px;
+  padding: 8px 16px;
+  background-color: #009900;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.controls button:hover {
+  background-color: #007700;
+}
+
+.controls button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.dojo-checkbox-container {
+  display: inline-block;
+} 

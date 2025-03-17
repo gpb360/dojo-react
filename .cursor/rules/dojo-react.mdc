@@ -1,0 +1,33 @@
+---
+description: Dojo Application to React
+globs: */**
+alwaysApply: false
+---
+I'm working on a project to convert a legacy Dojo application to React using a microfrontend architecture. I need your help to build this step by step. 
+
+The application is [describe your specific Dojo application - e.g., "a customer management system with a dashboard, data tables, forms, and visualization components"].
+
+I plan to use these technologies:
+- Single-spa as the microfrontend framework
+- Dojo Toolkit (the legacy codebase)
+- React 18+ for new components
+- [Any other specific technologies you're using]
+
+Please help me with:
+
+1. Setting up the basic project structure for a microfrontend architecture that can host both Dojo and React components
+
+2. Creating adapter components to wrap Dojo widgets in React, particularly for:
+   - Dojo form controls (CheckBox, TextBox, etc.)
+   - [Any other specific Dojo components you need to integrate]
+
+3. Building a communication bridge between Dojo and React components using:
+   - Event handling
+   - State synchronization
+   - Proper cleanup to avoid memory leaks
+
+4. Implementing a strategy to replace Dojo components one by one while maintaining application functionality
+
+5. Handling shared styling to ensure consistent UI during the transition
+
+Please provide specific code examples for each part of this implementation, focusing on practical patterns that I can implement right away. I'm particularly interested in seeing how to properly destroy and replace Dojo widgets in the DOM.

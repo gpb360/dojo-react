@@ -1,0 +1,112 @@
+/* Shared styles for all applications */
+body {
+  font-family: Arial, sans-serif;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+nav {
+  background-color: #2196f3;
+  padding: 10px 20px;
+  margin-bottom: 20px;
+}
+
+nav a {
+  color: white;
+  text-decoration: none;
+  padding: 5px 10px;
+  margin-right: 10px;
+  border-radius: 3px;
+}
+
+nav a:hover, nav a.active {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.app-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+button {
+  background-color: #0066cc;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+button:hover {
+  background-color: #0052a3;
+}
+
+input[type="text"] {
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+/* Utility classes */
+.mb-10 {
+  margin-bottom: 10px;
+}
+
+.mt-10 {
+  margin-top: 10px;
+}
+
+/* Task list styling */
+.task-list {
+  background-color: #f9f9f9;
+  padding: 15px;
+  border-radius: 5px;
+  margin: 20px 0;
+}
+
+.task-list h2 {
+  margin-top: 0;
+  color: #333;
+}
+
+.task-list ul {
+  padding-left: 20px;
+}
+
+.task-list li {
+  margin-bottom: 8px;
+}
+
+/* Custom styling for the delete button */
+.deleteButton {
+  background-color: #ff6b6b !important;
+  color: red !important;
+  border: none !important;
+  border-radius: 3px !important;
+  padding: 2px 8px !important;
+  font-size: 12px !important;
+}
+
+.deleteButton .dijitButtonNode {
+  background: #ff6b6b !important;
+  border-color: #ff5252 !important;
+  box-shadow: none !important;
+}
+
+.deleteButton .dijitButtonText {
+  color: white !important;
+}
+
+/* Hover state */
+.deleteButton:hover .dijitButtonNode {
+  background: #ff5252 !important;
+}
+
+/* Active state */
+.deleteButton:active .dijitButtonNode {
+  background: #e53935 !important;
+} 
