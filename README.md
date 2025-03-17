@@ -1,3 +1,17 @@
+# Dojo to React Migration Toolkit (DojotoReact)
+
+**DojotoReact** is a comprehensive toolkit and reference implementation for migrating legacy Dojo applications to modern React using a microfrontend architecture with single-spa. It demonstrates a practical, incremental migration path that allows Dojo and React components to coexist during the transition.
+
+Key features:
+- Real Dojo widget adapters with proper lifecycle management
+- Three migration phases: Dojo → Hybrid React+Dojo → Pure React
+- Microfrontend architecture using single-spa
+- Complete migration strategy with documentation
+
+This repository serves as both a working example and a blueprint for organizations migrating large-scale Dojo applications to React.
+
+---
+
 # Dojo to React Migration with single-spa
 
 This project demonstrates a comprehensive migration path from a legacy Dojo application to React using the single-spa microfrontend framework. It allows you to run Dojo and React applications side by side while gradually migrating components.

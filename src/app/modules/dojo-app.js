@@ -45,6 +45,13 @@ if (window.dojo && window.dojo.byId) {
   console.log('[dojo-app] Found global dojo.byId function');
 }
 
+// Add better webpack logging
+console.log('[dojo-app] Webpack environment information:');
+console.log('- NODE_ENV:', typeof process !== 'undefined' && process.env ? process.env.NODE_ENV : 'not available in browser');
+console.log('- Webpack mode:', typeof process !== 'undefined' && process.env ? (process.env.WEBPACK_MODE || 'unknown') : 'not available in browser');
+console.log('- Current URL:', window.location.href);
+console.log('- Base URL:', document.baseURI);
+
 // Log when the module is loaded
 console.log('[dojo-app] Module loaded and initialized');
 
@@ -115,6 +122,16 @@ function debugDojoStatus() {
     scriptTags.forEach(script => {
       console.log('Script source:', script.src);
     });
+    
+    // Add a check for webpack modules
+    console.log('Webpack built modules check:');
+    if (window.webpackJsonp) {
+      console.log('- webpackJsonp is available');
+    } else if (window.__webpack_require__) {
+      console.log('- __webpack_require__ is available');
+    } else {
+      console.log('- No webpack runtime detected in global scope');
+    }
   }
   
   console.groupEnd();
@@ -259,7 +276,7 @@ function mountImplementation(props) {
     // Set a timeout to prevent hanging
     const timeoutId = setTimeout(() => {
       console.warn('[dojo-app] Mount timeout triggered - defaulting to vanilla JS implementation');
-      mountWithVanillaJS(props.domElement)
+      mountWithVanillaJS(props.domElementGetter && typeof props.domElementGetter === 'function' ? props.domElementGetter() : document.getElementById('app'))
         .then(resolve)
         .catch(reject);
     }, 5000);
@@ -278,7 +295,7 @@ function mountImplementation(props) {
           
           // Fall back to vanilla JS implementation
           console.log('[dojo-app] Falling back to vanilla JS implementation');
-          mountWithVanillaJS(props.domElement)
+          mountWithVanillaJS(props.domElementGetter && typeof props.domElementGetter === 'function' ? props.domElementGetter() : document.getElementById('app'))
             .then(resolve)
             .catch(reject);
         });
@@ -288,7 +305,7 @@ function mountImplementation(props) {
       
       // Fall back to vanilla JS implementation
       console.log('[dojo-app] Falling back to vanilla JS implementation');
-      mountWithVanillaJS(props.domElement)
+      mountWithVanillaJS(props.domElementGetter && typeof props.domElementGetter === 'function' ? props.domElementGetter() : document.getElementById('app'))
         .then(resolve)
         .catch(reject);
     }
@@ -526,217 +543,514 @@ function mountWithLifecycleIntegration(props) {
     console.log('[dojo-app] Using require function:', typeof dojoRequire);
     
     try {
-      // First load just the core modules without using dojo/ready
-      // Use array syntax to ensure proper module path resolution
-      dojoRequire(["dojo/dom", "dojo/dom-construct", "dojo/on", "dojo/dom-class"], 
-        function(dom, domConstruct, on, domClass) {
-          console.log('[dojo-app] Core Dojo modules loaded:',
-            'dom:', typeof dom,
-            'domConstruct:', typeof domConstruct,
-            'on:', typeof on,
-            'domClass:', typeof domClass
-          );
+      // Make sure Dojo is properly initialized first - this is crucial
+      if (window.dojo) {
+        console.log('[dojo-app] Using global dojo object');
+        
+        // Create wrapper functions for the modules we need
+        const dom = {
+          byId: typeof window.dojo.byId === 'function' ? 
+            window.dojo.byId : 
+            function(id) { return document.getElementById(id); }
+        };
+        
+        const domConstruct = {
+          create: typeof window.dojo.create === 'function' ? 
+            window.dojo.create : 
+            function(tag, attrs, refNode) {
+              const elem = document.createElement(tag);
+              if (attrs) {
+                for (const key in attrs) {
+                  if (key === 'className') {
+                    elem.className = attrs[key];
+                  } else if (key === 'innerHTML') {
+                    elem.innerHTML = attrs[key];
+                  } else if (key === 'style' && typeof attrs[key] === 'object') {
+                    Object.assign(elem.style, attrs[key]);
+                  } else {
+                    elem.setAttribute(key, attrs[key]);
+                  }
+                }
+              }
+              if (refNode) {
+                refNode.appendChild(elem);
+              }
+              return elem;
+            }
+        };
+        
+        const on = typeof window.dojo.on === 'function' ? 
+          window.dojo.on : 
+          function(node, event, callback) {
+            node.addEventListener(event, callback);
+            return {
+              remove: function() {
+                node.removeEventListener(event, callback);
+              }
+            };
+          };
+        
+        const domClass = {
+          add: typeof window.dojo.addClass === 'function' ? 
+            window.dojo.addClass : 
+            function(node, className) { node.classList.add(className); },
+          remove: typeof window.dojo.removeClass === 'function' ? 
+            window.dojo.removeClass : 
+            function(node, className) { node.classList.remove(className); }
+        };
+        
+        console.log('[dojo-app] Created module wrappers for dom, domConstruct, on, and domClass');
+        afterModulesLoaded(dom, domConstruct, on, domClass)
+          .then(resolve)
+          .catch(reject);
+        return;
+      }
+      
+      // If global dojo is not available, try individual AMD loading
+      // This approach will load each module separately to avoid potential issues
+      console.log('[dojo-app] Attempting individual module loads');
+      
+      // We'll create our own module containers
+      let dom = null;
+      let domConstruct = null;
+      let on = null;
+      let domClass = null;
+      
+      // Load the modules one by one - this is more reliable than loading them all at once
+      dojoRequire(["dojo/dom"], function(domModule) {
+        console.log('[dojo-app] Loaded dom module:', typeof domModule);
+        dom = domModule;
+        
+        // Load the next module
+        dojoRequire(["dojo/dom-construct"], function(domConstructModule) {
+          console.log('[dojo-app] Loaded dom-construct module:', typeof domConstructModule);
+          domConstruct = domConstructModule;
           
-          try {
-            // Defensive check for module functions
-            if (!dom || typeof dom.byId !== 'function') {
-              console.error('[dojo-app] dom module is not correctly loaded:', dom);
-              throw new Error('Dojo dom.byId is not a function');
-            }
+          // Load the next module
+          dojoRequire(["dojo/on"], function(onModule) {
+            console.log('[dojo-app] Loaded on module:', typeof onModule);
+            on = onModule;
             
-            if (!domConstruct || typeof domConstruct.create !== 'function') {
-              console.error('[dojo-app] domConstruct module is not correctly loaded:', domConstruct);
-              throw new Error('Dojo domConstruct.create is not a function');
-            }
-            
-            // Get container early to check if we can proceed
-            let container;
-            try {
-              container = dom.byId('app');
-            } catch (e) {
-              console.error('[dojo-app] Error using dom.byId:', e);
-              console.warn('[dojo-app] Falling back to document.getElementById');
-              container = document.getElementById('app');
-            }
-            
-            if (!container) {
-              console.error('[dojo-app] Container #app not found in DOM');
-              throw new Error('Container element not found');
-            }
-            
-            console.log('[dojo-app] Found container element with AMD-loaded Dojo');
-            
-            // Create simpler DOM structure without trying to load Dojo widgets
-            container.innerHTML = '';
-            
-            const mainDiv = domConstruct.create("div", {
-              className: "dojo-task-manager claro",
-              style: { padding: "10px" }
-            }, container);
-            
-            domConstruct.create("h1", {
-              innerHTML: "Dojo Task Manager",
-              style: { marginBottom: "5px" }
-            }, mainDiv);
-            
-            domConstruct.create("p", {
-              innerHTML: "Task Manager (Using AMD Dojo)",
-              style: { marginBottom: "20px" }
-            }, mainDiv);
-            
-            // Create form container
-            const formDiv = domConstruct.create("div", {
-              style: { 
-                display: "flex", 
-                alignItems: "center",
-                marginBottom: "20px"
+            // Load the final module
+            dojoRequire(["dojo/dom-class"], function(domClassModule) {
+              console.log('[dojo-app] Loaded dom-class module:', typeof domClassModule);
+              domClass = domClassModule;
+              
+              // Now check if we have valid modules or if we need fallbacks
+              let useFallbacks = false;
+              
+              // Check the dom module
+              if (!dom || typeof dom.byId !== 'function') {
+                console.warn('[dojo-app] dom.byId not available, using fallback');
+                dom = {
+                  byId: function(id) { return document.getElementById(id); }
+                };
+                useFallbacks = true;
               }
-            }, mainDiv);
-            
-            // Create input
-            const input = domConstruct.create("input", {
-              type: "text",
-              placeholder: "Enter a task",
-              className: "dijitInputField",
-              style: {
-                padding: "8px",
-                width: "250px",
-                marginRight: "10px",
-                border: "1px solid #b5bcc7",
-                borderRadius: "4px"
+              
+              // Check the domConstruct module
+              if (!domConstruct || typeof domConstruct.create !== 'function') {
+                console.warn('[dojo-app] domConstruct.create not available, using fallback');
+                domConstruct = {
+                  create: function(tag, attrs, refNode) {
+                    const elem = document.createElement(tag);
+                    if (attrs) {
+                      for (const key in attrs) {
+                        if (key === 'className') {
+                          elem.className = attrs[key];
+                        } else if (key === 'innerHTML') {
+                          elem.innerHTML = attrs[key];
+                        } else if (key === 'style' && typeof attrs[key] === 'object') {
+                          Object.assign(elem.style, attrs[key]);
+                        } else {
+                          elem.setAttribute(key, attrs[key]);
+                        }
+                      }
+                    }
+                    if (refNode) {
+                      refNode.appendChild(elem);
+                    }
+                    return elem;
+                  }
+                };
+                useFallbacks = true;
               }
-            }, formDiv);
-            
-            // Create button
-            const button = domConstruct.create("button", {
-              innerHTML: "Add Task",
-              className: "dijitButton",
-              style: {
-                padding: "8px 12px",
-                background: "#1976d2",
-                color: "white",
-                border: "none",
-                cursor: "pointer",
-                borderRadius: "4px"
+              
+              // Check the on module
+              if (!on || typeof on !== 'function') {
+                console.warn('[dojo-app] on not available, using fallback');
+                on = function(node, event, callback) {
+                  node.addEventListener(event, callback);
+                  return {
+                    remove: function() {
+                      node.removeEventListener(event, callback);
+                    }
+                  };
+                };
+                useFallbacks = true;
               }
-            }, formDiv);
-            
-            // Create task list
-            const taskList = domConstruct.create("ul", {
-              id: "task-list",
-              style: {
-                listStyle: "none",
-                padding: 0
+              
+              // Check the domClass module
+              if (!domClass || typeof domClass.add !== 'function') {
+                console.warn('[dojo-app] domClass.add not available, using fallback');
+                domClass = {
+                  add: function(node, className) { node.classList.add(className); },
+                  remove: function(node, className) { node.classList.remove(className); }
+                };
+                useFallbacks = true;
               }
-            }, mainDiv);
-            
-            // Add task function
-            function addTask() {
-              const taskText = input.value.trim();
-              if (!taskText) return;
               
-              // Create task item
-              const taskItem = domConstruct.create("li", {
-                style: {
-                  display: "flex",
-                  alignItems: "center",
-                  margin: "10px 0",
-                  padding: "10px",
-                  background: "#f8f8f8",
-                  borderRadius: "4px"
-                }
-              }, taskList);
-              
-              // Create checkbox
-              const checkbox = domConstruct.create("input", {
-                type: "checkbox",
-                style: { marginRight: "10px" }
-              }, taskItem);
-              
-              // Create text node
-              const taskTextNode = domConstruct.create("span", {
-                innerHTML: taskText,
-                style: { flexGrow: "1" }
-              }, taskItem);
-              
-              // Create delete button
-              const deleteBtn = domConstruct.create("button", {
-                innerHTML: "Delete",
-                className: "dijitButton",
-                style: {
-                  padding: "5px 10px",
-                  background: "#dc3545",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "4px",
-                  cursor: "pointer"
-                }
-              }, taskItem);
-              
-              // Add event listeners
-              on(checkbox, "change", function() {
-                if (this.checked) {
-                  domClass.add(taskTextNode, "completed-task");
-                } else {
-                  domClass.remove(taskTextNode, "completed-task");
-                }
-              });
-              
-              on(deleteBtn, "click", function() {
-                taskList.removeChild(taskItem);
-              });
-              
-              // Clear input and focus
-              input.value = "";
-              input.focus();
-            }
-            
-            // Connect events
-            on(button, "click", addTask);
-            on(input, "keypress", function(e) {
-              if (e.key === "Enter" || e.keyCode === 13) {
-                addTask();
-              }
+              console.log('[dojo-app] Module loading complete, using fallbacks:', useFallbacks);
+              afterModulesLoaded(dom, domConstruct, on, domClass)
+                .then(resolve)
+                .catch(reject);
             });
-            
-            // Add CSS for completed tasks
-            const style = document.createElement("style");
-            style.textContent = ".completed-task { text-decoration: line-through; color: #888; }";
-            document.head.appendChild(style);
-            
-            // Focus input
-            input.focus();
-            
-            console.log("[dojo-app] AMD-loaded Dojo UI setup complete");
-            resolve();
-          } catch (error) {
-            console.error('[dojo-app] Error in Dojo AMD module setup:', error);
-            
-            // Fallback to vanilla JS implementation if the AMD modules failed
-            console.log('[dojo-app] Falling back to vanilla JS implementation');
-            mountWithVanillaJS(props.domElement)
-              .then(resolve)
-              .catch(reject);
-          }
-        },
-        function(err) {
-          console.error('[dojo-app] Error loading AMD modules:', err);
-          
-          // Fallback to vanilla JS implementation if AMD loading failed
-          console.log('[dojo-app] Falling back to vanilla JS implementation');
-          mountWithVanillaJS(props.domElement)
-            .then(resolve)
-            .catch(reject);
-        }
-      );
+          });
+        });
+      });
     } catch (error) {
       console.error('[dojo-app] Exception during AMD require call:', error);
       
       // Final fallback to vanilla JS implementation
       console.log('[dojo-app] Falling back to vanilla JS implementation');
-      mountWithVanillaJS(props.domElement)
+      mountWithVanillaJS(props.domElementGetter && typeof props.domElementGetter === 'function' ? props.domElementGetter() : document.getElementById('app'))
         .then(resolve)
         .catch(reject);
+    }
+  });
+}
+
+// Function to handle the modules after they are loaded (either real Dojo modules or fallbacks)
+function afterModulesLoaded(dom, domConstruct, on, domClass) {
+  return new Promise((resolve, reject) => {
+    try {
+      // Verify that we have the necessary module functions
+      console.log('[dojo-app] Using modules:',
+        'dom.byId:', typeof dom.byId === 'function' ? 'function' : 'not a function',
+        'domConstruct.create:', typeof domConstruct.create === 'function' ? 'function' : 'not a function'
+      );
+      
+      // Get container element
+      let container;
+      try {
+        // Try using dom.byId first
+        container = dom.byId('app');
+        console.log('[dojo-app] Container found using dom.byId');
+      } catch (e) {
+        // Fall back to document.getElementById
+        console.warn('[dojo-app] Error using dom.byId, falling back to document.getElementById:', e);
+        container = document.getElementById('app');
+      }
+      
+      // If still no container, use other methods to find it
+      if (!container) {
+        console.warn('[dojo-app] Container #app not found, trying alternate methods');
+        container = document.querySelector('#app') || document.querySelector('[id="app"]');
+      }
+      
+      // Final check for container
+      if (!container) {
+        console.error('[dojo-app] Container #app not found in DOM');
+        // Rather than throwing, create the container
+        console.log('[dojo-app] Creating #app container');
+        container = document.createElement('div');
+        container.id = 'app';
+        document.body.appendChild(container);
+      }
+      
+      console.log('[dojo-app] Found or created container element');
+      
+      // Create UI
+      // Clear container first
+      container.innerHTML = '';
+      
+      // Create main div
+      let mainDiv;
+      try {
+        mainDiv = domConstruct.create("div", {
+          className: "dojo-task-manager claro",
+          style: { padding: "10px" }
+        }, container);
+      } catch (e) {
+        console.warn('[dojo-app] Error using domConstruct.create, falling back to DOM API:', e);
+        mainDiv = document.createElement('div');
+        mainDiv.className = "dojo-task-manager claro";
+        mainDiv.style.padding = "10px";
+        container.appendChild(mainDiv);
+      }
+      
+      // Add title with appropriate fallbacks
+      try {
+        domConstruct.create("h1", {
+          innerHTML: "Dojo Task Manager",
+          style: { marginBottom: "5px" }
+        }, mainDiv);
+      } catch (e) {
+        const h1 = document.createElement('h1');
+        h1.innerHTML = "Dojo Task Manager";
+        h1.style.marginBottom = "5px";
+        mainDiv.appendChild(h1);
+      }
+      
+      // Add subtitle with appropriate fallbacks
+      try {
+        domConstruct.create("p", {
+          innerHTML: "Task Manager (Using Dojo + Fallbacks)",
+          style: { marginBottom: "20px" }
+        }, mainDiv);
+      } catch (e) {
+        const p = document.createElement('p');
+        p.innerHTML = "Task Manager (Using Dojo + Fallbacks)";
+        p.style.marginBottom = "20px";
+        mainDiv.appendChild(p);
+      }
+      
+      // Create form container with appropriate fallbacks
+      let formDiv;
+      try {
+        formDiv = domConstruct.create("div", {
+          style: { 
+            display: "flex", 
+            alignItems: "center",
+            marginBottom: "20px"
+          }
+        }, mainDiv);
+      } catch (e) {
+        formDiv = document.createElement('div');
+        formDiv.style.display = "flex";
+        formDiv.style.alignItems = "center";
+        formDiv.style.marginBottom = "20px";
+        mainDiv.appendChild(formDiv);
+      }
+      
+      // Create input with appropriate fallbacks
+      let input;
+      try {
+        input = domConstruct.create("input", {
+          type: "text",
+          placeholder: "Enter a task",
+          className: "dijitInputField",
+          style: {
+            padding: "8px",
+            width: "250px",
+            marginRight: "10px",
+            border: "1px solid #b5bcc7",
+            borderRadius: "4px"
+          }
+        }, formDiv);
+      } catch (e) {
+        input = document.createElement('input');
+        input.type = "text";
+        input.placeholder = "Enter a task";
+        input.className = "dijitInputField";
+        input.style.padding = "8px";
+        input.style.width = "250px";
+        input.style.marginRight = "10px";
+        input.style.border = "1px solid #b5bcc7";
+        input.style.borderRadius = "4px";
+        formDiv.appendChild(input);
+      }
+      
+      // Create button with appropriate fallbacks
+      let button;
+      try {
+        button = domConstruct.create("button", {
+          innerHTML: "Add Task",
+          className: "dijitButton",
+          style: {
+            padding: "8px 12px",
+            background: "#1976d2",
+            color: "white",
+            border: "none",
+            cursor: "pointer",
+            borderRadius: "4px"
+          }
+        }, formDiv);
+      } catch (e) {
+        button = document.createElement('button');
+        button.innerHTML = "Add Task";
+        button.className = "dijitButton";
+        button.style.padding = "8px 12px";
+        button.style.background = "#1976d2";
+        button.style.color = "white";
+        button.style.border = "none";
+        button.style.cursor = "pointer";
+        button.style.borderRadius = "4px";
+        formDiv.appendChild(button);
+      }
+      
+      // Create task list with appropriate fallbacks
+      let taskList;
+      try {
+        taskList = domConstruct.create("ul", {
+          id: "task-list",
+          style: {
+            listStyle: "none",
+            padding: 0
+          }
+        }, mainDiv);
+      } catch (e) {
+        taskList = document.createElement('ul');
+        taskList.id = "task-list";
+        taskList.style.listStyle = "none";
+        taskList.style.padding = "0";
+        mainDiv.appendChild(taskList);
+      }
+      
+      // Add task function with appropriate fallbacks
+      function addTask() {
+        const taskText = input.value.trim();
+        if (!taskText) return;
+        
+        // Create task item
+        let taskItem;
+        try {
+          taskItem = domConstruct.create("li", {
+            style: {
+              display: "flex",
+              alignItems: "center",
+              margin: "10px 0",
+              padding: "10px",
+              background: "#f8f8f8",
+              borderRadius: "4px"
+            }
+          }, taskList);
+        } catch (e) {
+          taskItem = document.createElement('li');
+          taskItem.style.display = "flex";
+          taskItem.style.alignItems = "center";
+          taskItem.style.margin = "10px 0";
+          taskItem.style.padding = "10px";
+          taskItem.style.background = "#f8f8f8";
+          taskItem.style.borderRadius = "4px";
+          taskList.appendChild(taskItem);
+        }
+        
+        // Create checkbox with appropriate fallbacks
+        let checkbox;
+        try {
+          checkbox = domConstruct.create("input", {
+            type: "checkbox",
+            style: { marginRight: "10px" }
+          }, taskItem);
+        } catch (e) {
+          checkbox = document.createElement('input');
+          checkbox.type = "checkbox";
+          checkbox.style.marginRight = "10px";
+          taskItem.appendChild(checkbox);
+        }
+        
+        // Create text node with appropriate fallbacks
+        let taskTextNode;
+        try {
+          taskTextNode = domConstruct.create("span", {
+            innerHTML: taskText,
+            style: { flexGrow: "1" }
+          }, taskItem);
+        } catch (e) {
+          taskTextNode = document.createElement('span');
+          taskTextNode.innerHTML = taskText;
+          taskTextNode.style.flexGrow = "1";
+          taskItem.appendChild(taskTextNode);
+        }
+        
+        // Create delete button with appropriate fallbacks
+        let deleteBtn;
+        try {
+          deleteBtn = domConstruct.create("button", {
+            innerHTML: "Delete",
+            className: "dijitButton",
+            style: {
+              padding: "5px 10px",
+              background: "#dc3545",
+              color: "white",
+              border: "none",
+              borderRadius: "4px",
+              cursor: "pointer"
+            }
+          }, taskItem);
+        } catch (e) {
+          deleteBtn = document.createElement('button');
+          deleteBtn.innerHTML = "Delete";
+          deleteBtn.className = "dijitButton";
+          deleteBtn.style.padding = "5px 10px";
+          deleteBtn.style.background = "#dc3545";
+          deleteBtn.style.color = "white";
+          deleteBtn.style.border = "none";
+          deleteBtn.style.borderRadius = "4px";
+          deleteBtn.style.cursor = "pointer";
+          taskItem.appendChild(deleteBtn);
+        }
+        
+        // Add event listeners with appropriate fallbacks
+        try {
+          on(checkbox, "change", function() {
+            if (this.checked) {
+              domClass.add(taskTextNode, "completed-task");
+            } else {
+              domClass.remove(taskTextNode, "completed-task");
+            }
+          });
+        } catch (e) {
+          checkbox.addEventListener("change", function() {
+            if (this.checked) {
+              taskTextNode.classList.add("completed-task");
+            } else {
+              taskTextNode.classList.remove("completed-task");
+            }
+          });
+        }
+        
+        try {
+          on(deleteBtn, "click", function() {
+            taskList.removeChild(taskItem);
+          });
+        } catch (e) {
+          deleteBtn.addEventListener("click", function() {
+            taskList.removeChild(taskItem);
+          });
+        }
+        
+        // Clear input and focus
+        input.value = "";
+        input.focus();
+      }
+      
+      // Connect events with appropriate fallbacks
+      try {
+        on(button, "click", addTask);
+      } catch (e) {
+        button.addEventListener("click", addTask);
+      }
+      
+      try {
+        on(input, "keypress", function(e) {
+          if (e.key === "Enter" || e.keyCode === 13) {
+            addTask();
+          }
+        });
+      } catch (e) {
+        input.addEventListener("keypress", function(e) {
+          if (e.key === "Enter" || e.keyCode === 13) {
+            addTask();
+          }
+        });
+      }
+      
+      // Add CSS for completed tasks
+      const style = document.createElement("style");
+      style.textContent = ".completed-task { text-decoration: line-through; color: #888; }";
+      document.head.appendChild(style);
+      
+      // Focus input
+      input.focus();
+      
+      console.log("[dojo-app] Dojo UI setup complete (with fallbacks as needed)");
+      resolve();
+      
+    } catch (error) {
+      console.error('[dojo-app] Error in Dojo UI setup:', error);
+      reject(error);
     }
   });
 }

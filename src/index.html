@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Dojo to React Migration</title>
+  <meta name="importmap-type" content="systemjs-importmap" />
+  <script type="systemjs-importmap">
+    {
+      "imports": {
+        "single-spa": "https://cdn.jsdelivr.net/npm/single-spa@5.9.0/lib/system/single-spa.min.js",
+        "react": "https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js",
+        "react-dom": "https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js"
+      }
+    }
+  </script>
+  
+  <!-- Add Dojo from CDN to ensure it's available -->
+  <script>
+    // Configure dojoConfig before loading Dojo
+    var dojoConfig = {
+      async: true,
+      isDebug: true,
+      packages: [
+        { name: "dojo", location: "https://ajax.googleapis.com/ajax/libs/dojo/1.16.4/dojo" },
+        { name: "dijit", location: "https://ajax.googleapis.com/ajax/libs/dojo/1.16.4/dijit" },
+        { name: "dojox", location: "https://ajax.googleapis.com/ajax/libs/dojo/1.16.4/dojox" }
+      ]
+    };
+    console.log('Dojo config set in index.html');
+  </script>
+  
+  <!-- Load Dojo from CDN -->
+  <script src="https://ajax.googleapis.com/ajax/libs/dojo/1.16.4/dojo/dojo.js"></script>
+  
+  <script src="https://cdn.jsdelivr.net/npm/import-map-overrides@2.2.0/dist/import-map-overrides.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/systemjs@6.12.1/dist/system.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/systemjs@6.12.1/dist/extras/amd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/systemjs@6.12.1/dist/extras/named-exports.min.js"></script>
+</head>
+<body>
+  <!-- Create a proper app container -->
+  <div id="root">
+    <div id="app" style="margin: 20px; padding: 20px; border: 1px solid #eee; border-radius: 4px;">
+      <!-- This will be populated by our Dojo app -->
+      <h3>Loading Dojo Application...</h3>
+    </div>
+  </div>
+  
+  <!-- Load the root-config -->
+  <script>
+    System.import('/root-config.js');
+  </script>
+  
+  <!-- Import map overrides UI -->
+  <import-map-overrides-full show-when-local-storage="devtools" dev-libs></import-map-overrides-full>
+</body>
+</html> 

@@ -1,6 +1,7 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const webpack = require('webpack');
 
 module.exports = {
   entry: './src/root-config.js',
@@ -47,6 +48,10 @@ module.exports = {
         { from: 'node_modules/dijit', to: 'node_modules/dijit' },
         { from: 'css', to: 'css' }
       ]
+    }),
+    new webpack.DefinePlugin({
+      'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development'),
+      'process.env.WEBPACK_MODE': JSON.stringify(process.env.WEBPACK_MODE || 'development')
     })
   ],
   devServer: {
@@ -55,9 +60,11 @@ module.exports = {
       directory: path.join(__dirname, 'dist'),
     },
     compress: true,
-    port: 9001,
+    port: 9002,
     headers: {
-      "Access-Control-Allow-Origin": "*"
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, PATCH, OPTIONS",
+      "Access-Control-Allow-Headers": "X-Requested-With, content-type, Authorization"
     },
     client: {
       overlay: {
