@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import singleSpaReact from 'single-spa-react';
 import PureReactTaskList from './components/PureReactTaskList.jsx';
+import ZustandTaskList from './components/ZustandTaskList.jsx';
 
 /**
  * SimpleReactApp - Demonstrates a fully migrated React application
@@ -22,6 +23,14 @@ const SimpleReactApp = () => {
       <PureReactTaskList />
       
       <div style={{ 
+        margin: '40px 0',
+        height: '1px',
+        background: 'linear-gradient(to right, transparent, #ccc, transparent)'
+      }}></div>
+      
+      <ZustandTaskList />
+      
+      <div style={{ 
         marginTop: '30px', 
         padding: '15px', 
         backgroundColor: '#e3f2fd', 
@@ -34,6 +43,7 @@ const SimpleReactApp = () => {
           <li>✅ <strong>Modern React patterns</strong> - Using hooks, memo, and functional components</li>
           <li>✅ <strong>Performance optimized</strong> - With useMemo, useCallback, and component splitting</li>
           <li>✅ <strong>Clean architecture</strong> - Following React best practices</li>
+          <li>✅ <strong>State management</strong> - Using Zustand for centralized state</li>
         </ul>
         <p style={{ marginTop: '10px' }}>
           Compare this with the <a href="#/hybrid-react" style={{ color: '#0066cc' }}>Hybrid React/Dojo App</a> to see the transition from hybrid to pure React.

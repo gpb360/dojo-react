@@ -18,7 +18,8 @@
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "single-spa": "^5.9.0",
-    "single-spa-react": "^4.6.1"
+    "single-spa-react": "^4.6.1",
+    "zustand": "^4.4.7"
   },
   "devDependencies": {
     "@babel/core": "^7.15.0",
