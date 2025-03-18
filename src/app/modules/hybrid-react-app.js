@@ -73,132 +73,207 @@ const HybridReactApp = ({ name }) => {
     };
   }, []);
 
+  // Create empty state component
+  const EmptyState = () => (
+    <div className="empty-state" style={{ 
+      textAlign: 'center', 
+      padding: '20px', 
+      color: '#777',
+      backgroundColor: '#f9f9f9',
+      borderRadius: '4px',
+      margin: '20px 0'
+    }}>
+      <p>No tasks added yet. Add your first task above!</p>
+      <span role="img" aria-label="tasks" style={{ fontSize: '24px' }}>📝</span>
+    </div>
+  );
+
+  const hasTasks = items.length > 0;
+
   return (
-    <div ref={containerRef} className="app-container" style={{ padding: '20px', backgroundColor: '#f9f9f9', borderRadius: '5px', maxWidth: '800px', margin: '0 auto' }}>
-      <h1>Hybrid React/Dojo Application</h1>
-      <p>This application demonstrates how to use real Dojo widgets in React</p>
+    <div ref={containerRef} className="hybrid-react-app">
+      <h2>Tasks</h2>
       
-      <div className="task-list" style={{ backgroundColor: 'white', padding: '20px', borderRadius: '5px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
-        <h2>Task List</h2>
-        
-        <div style={{ display: 'flex', marginBottom: '15px', gap: '10px' }}>
-          {/* Using real Dojo TextBox widget adapter */}
-          <div style={{ flex: 1 }}>
-            <DojoErrorBoundary fallback={
-              <input 
-                type="text" 
-                value={text} 
-                onChange={(e) => setText(e.target.value)}
-                placeholder="Enter a task"
-                style={{ width: '100%', padding: '4px 8px' }}
-              />
-            }>
-              <DojoWidgets.TextBox 
-                value={text} 
-                onChange={(value) => setText(value)}
-                placeholder="Enter a New task"
-              />
-            </DojoErrorBoundary>
-          </div>
-          
-          {/* Using real Dojo Button widget adapter */}
-          <div>
-            <DojoErrorBoundary fallback={
-              <button 
-                onClick={handleAddItem}
-                style={{ padding: '4px 12px' }}
-              >
-                Add Task
-              </button>
-            }>
-              <DojoWidgets.Button 
-                label="Add Task" 
-                onClick={handleAddItem}
-              />
-            </DojoErrorBoundary>
-          </div>
+      <div style={{ display: 'flex', marginBottom: '20px', gap: '10px' }}>
+        {/* Using real Dojo TextBox widget adapter */}
+        <div style={{ flex: 1 }}>
+          <DojoErrorBoundary fallback={
+            <input 
+              type="text" 
+              value={text} 
+              onChange={(e) => setText(e.target.value)}
+              placeholder="What needs to be done?"
+              className="taskInput"
+              style={{
+                width: '100%',
+                padding: '10px 12px',
+                fontSize: '16px',
+                border: '1px solid #ddd',
+                borderRadius: '4px',
+                outline: 'none'
+              }}
+            />
+          }>
+            <DojoWidgets.TextBox 
+              value={text} 
+              onChange={(value) => setText(value)}
+              placeholder="What needs to be done?"
+              className="taskInput"
+              style={{
+                width: '100%',
+                fontSize: '16px'
+              }}
+            />
+          </DojoErrorBoundary>
         </div>
         
-        {items.length === 0 ? (
-          <p>No tasks added yet. Add your first task above!</p>
-        ) : (
-          <ul style={{ listStyleType: 'none', padding: 0 }}>
-            {items.map((item, index) => (
-              <li key={index} style={{ 
-                marginBottom: '10px',
-                padding: '8px',
+        {/* Using real Dojo Button widget adapter */}
+        <div>
+          <DojoErrorBoundary fallback={
+            <button 
+              onClick={handleAddItem}
+              disabled={!text.trim()}
+              className="addButton"
+              style={{
+                background: text.trim() ? '#4caf50' : '#cccccc',
+                color: 'white',
+                border: 'none',
                 borderRadius: '4px',
-                backgroundColor: '#f5f5f5',
-                display: 'flex',
-                alignItems: 'center',
-                textDecoration: completed.includes(index) ? 'line-through' : 'none'
-              }}>
-                {/* Using real Dojo CheckBox widget adapter */}
-                <div style={{ display: 'inline-block', marginRight: '10px' }}>
-                  <DojoErrorBoundary fallback={
-                    <input 
-                      type="checkbox"
-                      checked={completed.includes(index)}
-                      onChange={() => toggleCompleted(index)}
-                    />
-                  }>
-                    <DojoWidgets.CheckBox 
-                      checked={completed.includes(index)}
-                      onChange={() => toggleCompleted(index)}
-                    />
-                  </DojoErrorBoundary>
-                </div>
-                
-                <div style={{ flex: 1 }}>{item}</div>
-                
-                {/* Add delete button using Dojo Button widget */}
-                <div style={{ marginLeft: 'auto' }}>
-                  <DojoErrorBoundary fallback={
-                    <button 
-                      onClick={() => handleDeleteItem(index)}
-                      style={{ 
-                        padding: '2px 8px', 
-                        backgroundColor: '#ff6b6b', 
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '3px',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      Delete
-                    </button>
-                  }>
-                    <DojoWidgets.Button 
-                      label="Delete" 
-                      onClick={() => handleDeleteItem(index)}
-                      style={{ color: 'white' }}
-                      className="deleteButton"
-                    />
-                  </DojoErrorBoundary>
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
+                padding: '10px 16px',
+                cursor: text.trim() ? 'pointer' : 'not-allowed',
+                fontSize: '16px',
+                transition: 'background 0.2s'
+              }}
+            >
+              Add
+            </button>
+          }>
+            <DojoWidgets.Button 
+              label="Add" 
+              onClick={handleAddItem}
+              disabled={!text.trim()}
+              className="addButton"
+              style={{
+                background: text.trim() ? '#4caf50' : '#cccccc',
+                color: 'white',
+                padding: '10px 16px',
+                fontSize: '16px'
+              }}
+            />
+          </DojoErrorBoundary>
+        </div>
       </div>
       
-      <div style={{ marginTop: '20px', padding: '15px', backgroundColor: '#e3f2fd', borderRadius: '5px' }}>
-        <p><strong>Note:</strong> This component demonstrates:</p>
-        <ul>
-          <li>Using real Dojo widgets inside React components with proper lifecycle management</li>
-          <li>Two-way data binding between Dojo widgets and React state</li>
-          <li>Error boundaries to handle widget initialization failures</li>
-          <li>Fallback to plain HTML when Dojo widgets fail to load</li>
+      {!hasTasks ? (
+        <EmptyState />
+      ) : (
+        <ul style={{ listStyleType: 'none', padding: 0 }}>
+          {items.map((item, index) => (
+            <li key={index} className={`task-item ${completed.includes(index) ? 'completed' : ''}`} style={{ 
+              marginBottom: '10px',
+              padding: '12px',
+              borderRadius: '4px',
+              backgroundColor: '#f5f5f5',
+              display: 'flex',
+              alignItems: 'center',
+              transition: 'all 0.2s ease',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+              opacity: completed.includes(index) ? 0.7 : 1
+            }}>
+              {/* Using real Dojo CheckBox widget adapter */}
+              <div className="dojo-checkbox-container">
+                <DojoErrorBoundary fallback={
+                  <input 
+                    type="checkbox"
+                    checked={completed.includes(index)}
+                    onChange={() => toggleCompleted(index)}
+                  />
+                }>
+                  <DojoWidgets.CheckBox 
+                    checked={completed.includes(index)}
+                    onChange={() => toggleCompleted(index)}
+                  />
+                </DojoErrorBoundary>
+              </div>
+              
+              <span className={`task-text ${completed.includes(index) ? 'completed' : ''}`} style={{ 
+                flexGrow: 1, 
+                fontWeight: completed.includes(index) ? 'normal' : '500',
+                color: completed.includes(index) ? '#777' : '#333' 
+              }}>
+                {item}
+              </span>
+              
+              {/* Add delete button using Dojo Button widget */}
+              <div>
+                <DojoErrorBoundary fallback={
+                  <button 
+                    onClick={() => handleDeleteItem(index)}
+                    className="deleteButton"
+                    style={{
+                      background: '#ff5252',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '4px',
+                      padding: '6px 12px',
+                      cursor: 'pointer',
+                      fontSize: '14px',
+                      transition: 'background 0.2s'
+                    }}
+                    onMouseOver={(e) => e.currentTarget.style.background = '#ff1744'}
+                    onMouseOut={(e) => e.currentTarget.style.background = '#ff5252'}
+                  >
+                    Delete
+                  </button>
+                }>
+                  <DojoWidgets.Button 
+                    label="Delete" 
+                    onClick={() => handleDeleteItem(index)}
+                    className="deleteButton"
+                    style={{
+                      background: '#ff5252',
+                      color: 'white',
+                      padding: '6px 12px',
+                      fontSize: '14px'
+                    }}
+                  />
+                </DojoErrorBoundary>
+              </div>
+            </li>
+          ))}
         </ul>
-        <div style={{ marginTop: '10px', padding: '10px', backgroundColor: '#fffde7', borderRadius: '5px' }}>
-          <p><strong>Migration Strategy:</strong></p>
-          <ol>
-            <li><strong>Phase 1:</strong> Create React wrappers for Dojo widgets (what you see here)</li>
-            <li><strong>Phase 2:</strong> Move state management to React while still using Dojo for UI</li>
-            <li><strong>Phase 3:</strong> Gradually replace Dojo widgets with pure React components</li>
-            <li><strong>Phase 4:</strong> Refactor to use modern React patterns and optimizations</li>
-          </ol>
+      )}
+      
+      {hasTasks && (
+        <div className="task-counter" style={{ 
+          display: 'flex', 
+          justifyContent: 'space-between',
+          marginTop: '20px',
+          padding: '10px 0',
+          borderTop: '1px solid #eee',
+          color: '#777',
+          fontSize: '14px'
+        }}>
+          <span>{items.length} task(s)</span>
+          <span>{completed.length} completed</span>
         </div>
+      )}
+      
+      <div className="info-box" style={{ 
+        marginTop: '30px',
+        padding: '15px', 
+        backgroundColor: '#f8f9fa', 
+        borderRadius: '4px',
+        border: '1px solid #eaeaea',
+        fontSize: '14px',
+        color: '#666'
+      }}>
+        <p style={{ margin: '0 0 10px 0' }}><strong>Hybrid Component</strong>: React UI with Dojo widgets</p>
+        <ul style={{ margin: '0', paddingLeft: '20px' }}>
+          <li>Uses React for state management</li>
+          <li>Integrates real Dojo widgets in a React component</li>
+          <li>Shows fallbacks when widgets fail to load</li>
+        </ul>
       </div>
     </div>
   );

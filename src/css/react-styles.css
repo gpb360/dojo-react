@@ -66,39 +66,121 @@
 }
 
 /* Hybrid mode styles */
-.hybrid-manager {
-  padding: 20px;
-  border: 1px dashed #ccc;
-  border-radius: 4px;
-  margin-top: 20px;
+.hybrid-react-app {
+  background-color: white;
+  padding: 24px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+  max-width: 600px;
+  margin: 0 auto;
 }
 
-.controls {
+.hybrid-react-app h2 {
+  margin-top: 0;
+  color: #2c3e50;
   margin-bottom: 20px;
-  display: flex;
-  gap: 10px;
 }
 
-.controls button {
-  padding: 8px 16px;
-  background-color: #009900;
-  color: white;
-  border: none;
+.hybrid-react-app .task-item {
+  margin-bottom: 10px;
+  padding: 12px;
   border-radius: 4px;
-  cursor: pointer;
+  background-color: #f5f5f5;
+  display: flex;
+  align-items: center;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.hybrid-react-app .task-item.completed {
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+
+.hybrid-react-app .task-text {
+  flex-grow: 1;
+  font-weight: 500;
+  color: #333;
+}
+
+.hybrid-react-app .task-text.completed {
+  font-weight: normal;
+  color: #777;
+}
+
+.hybrid-react-app .empty-state {
+  text-align: center;
+  padding: 20px;
+  color: #777;
+  background-color: #f9f9f9;
+  border-radius: 4px;
+  margin: 20px 0;
+}
+
+.hybrid-react-app .task-counter {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+  padding: 10px 0;
+  border-top: 1px solid #eee;
+  color: #777;
   font-size: 14px;
 }
 
-.controls button:hover {
-  background-color: #007700;
+.hybrid-react-app .info-box {
+  margin-top: 30px;
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  border: 1px solid #eaeaea;
+  font-size: 14px;
+  color: #666;
 }
 
-.controls button:disabled {
-  background-color: #cccccc;
-  cursor: not-allowed;
+/* Override Dojo widget styles to match React UI */
+.dijitButton.deleteButton {
+  background: #ff5252 !important;
+  color: white !important;
+  padding: 6px 12px !important;
+  font-size: 14px !important;
+  border: none !important;
+  border-radius: 4px !important;
+  transition: background 0.2s !important;
+}
+
+.dijitButton.deleteButton:hover {
+  background: #ff1744 !important;
+}
+
+.dijitButton.addButton {
+  background: #4caf50 !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 4px !important;
+  padding: 10px 16px !important;
+  font-size: 16px !important;
+  transition: background 0.2s !important;
+}
+
+.dijitButton.addButton:hover {
+  background: #3d8b40 !important;
+}
+
+.dijitButton.addButton[disabled] {
+  background: #cccccc !important;
+  cursor: not-allowed !important;
+}
+
+.dijitTextBox.taskInput {
+  width: 100% !important;
+  font-size: 16px !important;
+  padding: 10px 12px !important;
+  border: 1px solid #ddd !important;
+  border-radius: 4px !important;
+  outline: none !important;
 }
 
 .dojo-checkbox-container {
   display: inline-block;
-  margin-right: 10px;
+  margin-right: 12px;
 } 

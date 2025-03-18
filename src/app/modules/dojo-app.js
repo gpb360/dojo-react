@@ -387,17 +387,23 @@ function mountWithLifecycleIntegration(props) {
         
         const mainDiv = domConstruct.create("div", {
           className: "dojo-task-manager claro",
-          style: { padding: "10px" }
+          style: { 
+            padding: "24px", 
+            backgroundColor: "white",
+            borderRadius: "8px",
+            boxShadow: "0 2px 10px rgba(0,0,0,0.08)",
+            maxWidth: "600px",
+            margin: "0 auto"
+          }
         }, container);
         
-        domConstruct.create("h1", {
-          innerHTML: "Dojo Task Manager",
-          style: { marginBottom: "5px" }
-        }, mainDiv);
-        
-        domConstruct.create("p", {
-          innerHTML: "Task Manager (Using Global Dojo)",
-          style: { marginBottom: "20px" }
+        domConstruct.create("h2", {
+          innerHTML: "Tasks",
+          style: { 
+            marginTop: "0",
+            marginBottom: "20px",
+            color: "#2c3e50"
+          }
         }, mainDiv);
         
         // Create form container
@@ -405,33 +411,39 @@ function mountWithLifecycleIntegration(props) {
           style: { 
             display: "flex", 
             alignItems: "center",
-            marginBottom: "20px"
+            marginBottom: "20px",
+            gap: "10px"
           }
         }, mainDiv);
         
         // Create input
         const input = domConstruct.create("input", {
           type: "text",
-          placeholder: "Enter a task",
+          placeholder: "What needs to be done?",
+          className: "dijitInputField",
           style: {
-            padding: "8px",
-            width: "250px",
-            marginRight: "10px",
-            border: "1px solid #b5bcc7",
-            borderRadius: "4px"
+            flex: "1",
+            padding: "10px 12px",
+            fontSize: "16px",
+            border: "1px solid #ddd",
+            borderRadius: "4px",
+            outline: "none"
           }
         }, formDiv);
         
         // Create button
         const button = domConstruct.create("button", {
-          innerHTML: "Add Task",
+          innerHTML: "Add",
+          className: "dijitButton",
           style: {
-            padding: "8px 12px",
-            background: "#1976d2",
+            background: "#4caf50",
             color: "white",
             border: "none",
+            borderRadius: "4px",
+            padding: "10px 16px",
             cursor: "pointer",
-            borderRadius: "4px"
+            fontSize: "16px",
+            transition: "background 0.2s"
           }
         }, formDiv);
         
@@ -444,45 +456,106 @@ function mountWithLifecycleIntegration(props) {
           }
         }, mainDiv);
         
+        // Create empty state
+        let emptyState;
+        try {
+          emptyState = domConstruct.create("div", {
+            style: {
+              textAlign: "center",
+              padding: "20px",
+              color: "#777",
+              backgroundColor: "#f9f9f9",
+              borderRadius: "4px",
+              margin: "20px 0",
+              display: "block"
+            }
+          }, mainDiv);
+          
+          domConstruct.create("p", {
+            innerHTML: "No tasks added yet. Add your first task above!"
+          }, emptyState);
+          
+          domConstruct.create("span", {
+            innerHTML: "📝",
+            style: {
+              fontSize: "24px"
+            }
+          }, emptyState);
+        } catch (e) {
+          emptyState = document.createElement('div');
+          emptyState.style.textAlign = "center";
+          emptyState.style.padding = "20px";
+          emptyState.style.color = "#777";
+          emptyState.style.backgroundColor = "#f9f9f9";
+          emptyState.style.borderRadius = "4px";
+          emptyState.style.margin = "20px 0";
+          emptyState.style.display = "block";
+          
+          const emptyText = document.createElement('p');
+          emptyText.innerHTML = "No tasks added yet. Add your first task above!";
+          emptyState.appendChild(emptyText);
+          
+          const emptyIcon = document.createElement('span');
+          emptyIcon.innerHTML = "📝";
+          emptyIcon.style.fontSize = "24px";
+          emptyState.appendChild(emptyIcon);
+          
+          mainDiv.appendChild(emptyState);
+        }
+        
         // Add task function
         function addTask() {
           const taskText = input.value.trim();
           if (!taskText) return;
+          
+          // Hide empty state when tasks are added
+          if (emptyState) {
+            emptyState.style.display = "none";
+          }
           
           // Create task item
           const taskItem = domConstruct.create("li", {
             style: {
               display: "flex",
               alignItems: "center",
-              margin: "10px 0",
-              padding: "10px",
-              background: "#f8f8f8",
-              borderRadius: "4px"
+              marginBottom: "10px",
+              padding: "12px",
+              borderRadius: "4px",
+              backgroundColor: "#f5f5f5",
+              transition: "all 0.2s ease",
+              boxShadow: "0 1px 3px rgba(0,0,0,0.1)"
             }
           }, taskList);
           
           // Create checkbox
           const checkbox = domConstruct.create("input", {
             type: "checkbox",
-            style: { marginRight: "10px" }
+            style: { marginRight: "12px" }
           }, taskItem);
           
           // Create text node
           const taskTextNode = domConstruct.create("span", {
             innerHTML: taskText,
-            style: { flexGrow: "1" }
+            style: { 
+              flexGrow: "1",
+              fontWeight: "500",
+              color: "#333"
+            }
           }, taskItem);
           
           // Create delete button
           const deleteBtn = domConstruct.create("button", {
             innerHTML: "Delete",
+            className: "dijitButton",
             style: {
-              padding: "5px 10px",
-              background: "#dc3545",
+              background: "#ff5252",
               color: "white",
               border: "none",
               borderRadius: "4px",
-              cursor: "pointer"
+              padding: "6px 12px",
+              cursor: "pointer",
+              fontSize: "14px",
+              transition: "background 0.2s"
             }
           }, taskItem);
           
@@ -490,14 +563,46 @@ function mountWithLifecycleIntegration(props) {
           checkbox.addEventListener("change", function() {
             if (this.checked) {
               domClass.add(taskTextNode, "completed-task");
+              taskTextNode.style.textDecoration = "line-through";
+              taskTextNode.style.fontWeight = "normal";
+              taskTextNode.style.color = "#777";
+              taskItem.style.opacity = "0.7";
             } else {
               domClass.remove(taskTextNode, "completed-task");
+              taskTextNode.style.textDecoration = "none";
+              taskTextNode.style.fontWeight = "500";
+              taskTextNode.style.color = "#333";
+              taskItem.style.opacity = "1";
             }
           });
           
           deleteBtn.addEventListener("click", function() {
             taskList.removeChild(taskItem);
+            
+            // Show empty state when all tasks are removed
+            if (taskList.children.length === 0 && emptyState) {
+              emptyState.style.display = "block";
+            }
           });
+          
+          // Add hover effects
+          try {
+            on(deleteBtn, "mouseover", function() {
+              this.style.background = "#ff1744";
+            });
+            
+            on(deleteBtn, "mouseout", function() {
+              this.style.background = "#ff5252";
+            });
+          } catch (e) {
+            deleteBtn.addEventListener("mouseover", function() {
+              this.style.background = "#ff1744";
+            });
+            
+            deleteBtn.addEventListener("mouseout", function() {
+              this.style.background = "#ff5252";
+            });
+          }
           
           // Clear input and focus
           input.value = "";
@@ -769,40 +874,45 @@ function afterModulesLoaded(dom, domConstruct, on, domClass) {
       try {
         mainDiv = domConstruct.create("div", {
           className: "dojo-task-manager claro",
-          style: { padding: "10px" }
+          style: { 
+            padding: "24px", 
+            backgroundColor: "white",
+            borderRadius: "8px",
+            boxShadow: "0 2px 10px rgba(0,0,0,0.08)",
+            maxWidth: "600px",
+            margin: "0 auto"
+          }
         }, container);
       } catch (e) {
         console.warn('[dojo-app] Error using domConstruct.create, falling back to DOM API:', e);
         mainDiv = document.createElement('div');
         mainDiv.className = "dojo-task-manager claro";
-        mainDiv.style.padding = "10px";
+        mainDiv.style.padding = "24px";
+        mainDiv.style.backgroundColor = "white";
+        mainDiv.style.borderRadius = "8px";
+        mainDiv.style.boxShadow = "0 2px 10px rgba(0,0,0,0.08)";
+        mainDiv.style.maxWidth = "600px";
+        mainDiv.style.margin = "0 auto";
         container.appendChild(mainDiv);
       }
       
       // Add title with appropriate fallbacks
       try {
-        domConstruct.create("h1", {
-          innerHTML: "Dojo Task Manager",
-          style: { marginBottom: "5px" }
+        domConstruct.create("h2", {
+          innerHTML: "Tasks",
+          style: { 
+            marginTop: "0",
+            marginBottom: "20px",
+            color: "#2c3e50"
+          }
         }, mainDiv);
       } catch (e) {
-        const h1 = document.createElement('h1');
-        h1.innerHTML = "Dojo Task Manager";
-        h1.style.marginBottom = "5px";
-        mainDiv.appendChild(h1);
-      }
-      
-      // Add subtitle with appropriate fallbacks
-      try {
-        domConstruct.create("p", {
-          innerHTML: "Task Manager (Using Dojo + Fallbacks)",
-          style: { marginBottom: "20px" }
-        }, mainDiv);
-      } catch (e) {
-        const p = document.createElement('p');
-        p.innerHTML = "Task Manager (Using Dojo + Fallbacks)";
-        p.style.marginBottom = "20px";
-        mainDiv.appendChild(p);
+        const h2 = document.createElement('h2');
+        h2.innerHTML = "Tasks";
+        h2.style.marginTop = "0";
+        h2.style.marginBottom = "20px";
+        h2.style.color = "#2c3e50";
+        mainDiv.appendChild(h2);
       }
       
       // Create form container with appropriate fallbacks
@@ -812,7 +922,8 @@ function afterModulesLoaded(dom, domConstruct, on, domClass) {
           style: { 
             display: "flex", 
             alignItems: "center",
-            marginBottom: "20px"
+            marginBottom: "20px",
+            gap: "10px"
           }
         }, mainDiv);
       } catch (e) {
@@ -820,6 +931,7 @@ function afterModulesLoaded(dom, domConstruct, on, domClass) {
         formDiv.style.display = "flex";
         formDiv.style.alignItems = "center";
         formDiv.style.marginBottom = "20px";
+        formDiv.style.gap = "10px";
         mainDiv.appendChild(formDiv);
       }
       
@@ -828,26 +940,28 @@ function afterModulesLoaded(dom, domConstruct, on, domClass) {
       try {
         input = domConstruct.create("input", {
           type: "text",
-          placeholder: "Enter a task",
+          placeholder: "What needs to be done?",
           className: "dijitInputField",
           style: {
-            padding: "8px",
-            width: "250px",
-            marginRight: "10px",
-            border: "1px solid #b5bcc7",
-            borderRadius: "4px"
+            flex: "1",
+            padding: "10px 12px",
+            fontSize: "16px",
+            border: "1px solid #ddd",
+            borderRadius: "4px",
+            outline: "none"
           }
         }, formDiv);
       } catch (e) {
         input = document.createElement('input');
         input.type = "text";
-        input.placeholder = "Enter a task";
+        input.placeholder = "What needs to be done?";
         input.className = "dijitInputField";
-        input.style.padding = "8px";
-        input.style.width = "250px";
-        input.style.marginRight = "10px";
-        input.style.border = "1px solid #b5bcc7";
+        input.style.flex = "1";
+        input.style.padding = "10px 12px";
+        input.style.fontSize = "16px";
+        input.style.border = "1px solid #ddd";
         input.style.borderRadius = "4px";
+        input.style.outline = "none";
         formDiv.appendChild(input);
       }
       
@@ -855,27 +969,31 @@ function afterModulesLoaded(dom, domConstruct, on, domClass) {
       let button;
       try {
         button = domConstruct.create("button", {
-          innerHTML: "Add Task",
+          innerHTML: "Add",
           className: "dijitButton",
           style: {
-            padding: "8px 12px",
-            background: "#1976d2",
+            background: "#4caf50",
             color: "white",
             border: "none",
+            borderRadius: "4px",
+            padding: "10px 16px",
             cursor: "pointer",
-            borderRadius: "4px"
+            fontSize: "16px",
+            transition: "background 0.2s"
           }
         }, formDiv);
       } catch (e) {
         button = document.createElement('button');
-        button.innerHTML = "Add Task";
+        button.innerHTML = "Add";
         button.className = "dijitButton";
-        button.style.padding = "8px 12px";
-        button.style.background = "#1976d2";
+        button.style.background = "#4caf50";
         button.style.color = "white";
         button.style.border = "none";
-        button.style.cursor = "pointer";
         button.style.borderRadius = "4px";
+        button.style.padding = "10px 16px";
+        button.style.cursor = "pointer";
+        button.style.fontSize = "16px";
+        button.style.transition = "background 0.2s";
         formDiv.appendChild(button);
       }
       
@@ -897,10 +1015,62 @@ function afterModulesLoaded(dom, domConstruct, on, domClass) {
         mainDiv.appendChild(taskList);
       }
       
+      // Create empty state
+      let emptyState;
+      try {
+        emptyState = domConstruct.create("div", {
+          style: {
+            textAlign: "center",
+            padding: "20px",
+            color: "#777",
+            backgroundColor: "#f9f9f9",
+            borderRadius: "4px",
+            margin: "20px 0",
+            display: "block"
+          }
+        }, mainDiv);
+        
+        domConstruct.create("p", {
+          innerHTML: "No tasks added yet. Add your first task above!"
+        }, emptyState);
+        
+        domConstruct.create("span", {
+          innerHTML: "📝",
+          style: {
+            fontSize: "24px"
+          }
+        }, emptyState);
+      } catch (e) {
+        emptyState = document.createElement('div');
+        emptyState.style.textAlign = "center";
+        emptyState.style.padding = "20px";
+        emptyState.style.color = "#777";
+        emptyState.style.backgroundColor = "#f9f9f9";
+        emptyState.style.borderRadius = "4px";
+        emptyState.style.margin = "20px 0";
+        emptyState.style.display = "block";
+        
+        const emptyText = document.createElement('p');
+        emptyText.innerHTML = "No tasks added yet. Add your first task above!";
+        emptyState.appendChild(emptyText);
+        
+        const emptyIcon = document.createElement('span');
+        emptyIcon.innerHTML = "📝";
+        emptyIcon.style.fontSize = "24px";
+        emptyState.appendChild(emptyIcon);
+        
+        mainDiv.appendChild(emptyState);
+      }
+      
       // Add task function with appropriate fallbacks
       function addTask() {
         const taskText = input.value.trim();
         if (!taskText) return;
+        
+        // Hide empty state when tasks are added
+        if (emptyState) {
+          emptyState.style.display = "none";
+        }
         
         // Create task item
         let taskItem;
@@ -909,20 +1079,24 @@ function afterModulesLoaded(dom, domConstruct, on, domClass) {
             style: {
               display: "flex",
               alignItems: "center",
-              margin: "10px 0",
-              padding: "10px",
-              background: "#f8f8f8",
-              borderRadius: "4px"
+              marginBottom: "10px",
+              padding: "12px",
+              borderRadius: "4px",
+              backgroundColor: "#f5f5f5",
+              transition: "all 0.2s ease",
+              boxShadow: "0 1px 3px rgba(0,0,0,0.1)"
             }
           }, taskList);
         } catch (e) {
           taskItem = document.createElement('li');
           taskItem.style.display = "flex";
           taskItem.style.alignItems = "center";
-          taskItem.style.margin = "10px 0";
-          taskItem.style.padding = "10px";
-          taskItem.style.background = "#f8f8f8";
+          taskItem.style.marginBottom = "10px";
+          taskItem.style.padding = "12px";
           taskItem.style.borderRadius = "4px";
+          taskItem.style.backgroundColor = "#f5f5f5";
+          taskItem.style.transition = "all 0.2s ease";
+          taskItem.style.boxShadow = "0 1px 3px rgba(0,0,0,0.1)";
           taskList.appendChild(taskItem);
         }
         
@@ -931,12 +1105,12 @@ function afterModulesLoaded(dom, domConstruct, on, domClass) {
         try {
           checkbox = domConstruct.create("input", {
             type: "checkbox",
-            style: { marginRight: "10px" }
+            style: { marginRight: "12px" }
           }, taskItem);
         } catch (e) {
           checkbox = document.createElement('input');
           checkbox.type = "checkbox";
-          checkbox.style.marginRight = "10px";
+          checkbox.style.marginRight = "12px";
           taskItem.appendChild(checkbox);
         }
         
@@ -945,12 +1119,18 @@ function afterModulesLoaded(dom, domConstruct, on, domClass) {
         try {
           taskTextNode = domConstruct.create("span", {
             innerHTML: taskText,
-            style: { flexGrow: "1" }
+            style: { 
+              flexGrow: "1",
+              fontWeight: "500",
+              color: "#333"
+            }
           }, taskItem);
         } catch (e) {
           taskTextNode = document.createElement('span');
           taskTextNode.innerHTML = taskText;
           taskTextNode.style.flexGrow = "1";
+          taskTextNode.style.fontWeight = "500";
+          taskTextNode.style.color = "#333";
           taskItem.appendChild(taskTextNode);
         }
         
@@ -961,24 +1141,28 @@ function afterModulesLoaded(dom, domConstruct, on, domClass) {
             innerHTML: "Delete",
             className: "dijitButton",
             style: {
-              padding: "5px 10px",
-              background: "#dc3545",
+              background: "#ff5252",
               color: "white",
               border: "none",
               borderRadius: "4px",
-              cursor: "pointer"
+              padding: "6px 12px",
+              cursor: "pointer",
+              fontSize: "14px",
+              transition: "background 0.2s"
             }
           }, taskItem);
         } catch (e) {
           deleteBtn = document.createElement('button');
           deleteBtn.innerHTML = "Delete";
           deleteBtn.className = "dijitButton";
-          deleteBtn.style.padding = "5px 10px";
-          deleteBtn.style.background = "#dc3545";
+          deleteBtn.style.background = "#ff5252";
           deleteBtn.style.color = "white";
           deleteBtn.style.border = "none";
           deleteBtn.style.borderRadius = "4px";
+          deleteBtn.style.padding = "6px 12px";
           deleteBtn.style.cursor = "pointer";
+          deleteBtn.style.fontSize = "14px";
+          deleteBtn.style.transition = "background 0.2s";
           taskItem.appendChild(deleteBtn);
         }
         
@@ -987,16 +1171,32 @@ function afterModulesLoaded(dom, domConstruct, on, domClass) {
           on(checkbox, "change", function() {
             if (this.checked) {
               domClass.add(taskTextNode, "completed-task");
+              taskTextNode.style.textDecoration = "line-through";
+              taskTextNode.style.fontWeight = "normal";
+              taskTextNode.style.color = "#777";
+              taskItem.style.opacity = "0.7";
             } else {
               domClass.remove(taskTextNode, "completed-task");
+              taskTextNode.style.textDecoration = "none";
+              taskTextNode.style.fontWeight = "500";
+              taskTextNode.style.color = "#333";
+              taskItem.style.opacity = "1";
             }
           });
         } catch (e) {
           checkbox.addEventListener("change", function() {
             if (this.checked) {
               taskTextNode.classList.add("completed-task");
+              taskTextNode.style.textDecoration = "line-through";
+              taskTextNode.style.fontWeight = "normal";
+              taskTextNode.style.color = "#777";
+              taskItem.style.opacity = "0.7";
             } else {
               taskTextNode.classList.remove("completed-task");
+              taskTextNode.style.textDecoration = "none";
+              taskTextNode.style.fontWeight = "500";
+              taskTextNode.style.color = "#333";
+              taskItem.style.opacity = "1";
             }
           });
         }
@@ -1004,10 +1204,39 @@ function afterModulesLoaded(dom, domConstruct, on, domClass) {
         try {
           on(deleteBtn, "click", function() {
             taskList.removeChild(taskItem);
+            
+            // Show empty state when all tasks are removed
+            if (taskList.children.length === 0 && emptyState) {
+              emptyState.style.display = "block";
+            }
           });
         } catch (e) {
           deleteBtn.addEventListener("click", function() {
             taskList.removeChild(taskItem);
+            
+            // Show empty state when all tasks are removed
+            if (taskList.children.length === 0 && emptyState) {
+              emptyState.style.display = "block";
+            }
+          });
+        }
+        
+        // Add hover effects
+        try {
+          on(deleteBtn, "mouseover", function() {
+            this.style.background = "#ff1744";
+          });
+          
+          on(deleteBtn, "mouseout", function() {
+            this.style.background = "#ff5252";
+          });
+        } catch (e) {
+          deleteBtn.addEventListener("mouseover", function() {
+            this.style.background = "#ff1744";
+          });
+          
+          deleteBtn.addEventListener("mouseout", function() {
+            this.style.background = "#ff5252";
           });
         }
         
@@ -1077,36 +1306,43 @@ function mountWithVanillaJS(domElement) {
     style.textContent = `
       .task-manager-vanilla {
         font-family: Arial, sans-serif;
-        padding: 15px;
-        max-width: 500px;
+        padding: 24px;
+        max-width: 600px;
         margin: 0 auto;
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
       }
-      .task-manager-vanilla h1 {
-        color: #333;
-        margin-bottom: 5px;
-      }
-      .task-manager-vanilla p {
-        color: #666;
+      .task-manager-vanilla h2 {
+        color: #2c3e50;
+        margin-top: 0;
         margin-bottom: 20px;
       }
       .task-form {
         display: flex;
         margin-bottom: 20px;
+        gap: 10px;
       }
       .task-input {
-        flex-grow: 1;
-        padding: 8px;
-        border: 1px solid #ccc;
+        flex: 1;
+        padding: 10px 12px;
+        font-size: 16px;
+        border: 1px solid #ddd;
         border-radius: 4px;
-        margin-right: 10px;
+        outline: none;
       }
       .add-button {
-        background: #2196F3;
+        background: #4caf50;
         color: white;
         border: none;
-        padding: 8px 16px;
+        padding: 10px 16px;
         border-radius: 4px;
         cursor: pointer;
+        font-size: 16px;
+        transition: background 0.2s;
+      }
+      .add-button:hover {
+        background: #3d8b40;
       }
       .task-list {
         list-style: none;
@@ -1115,28 +1351,49 @@ function mountWithVanillaJS(domElement) {
       .task-item {
         display: flex;
         align-items: center;
-        background: #f9f9f9;
-        padding: 10px;
-        margin-bottom: 8px;
+        background: #f5f5f5;
+        padding: 12px;
+        margin-bottom: 10px;
         border-radius: 4px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        transition: all 0.2s ease;
       }
       .task-checkbox {
-        margin-right: 10px;
+        margin-right: 12px;
       }
       .task-text {
         flex-grow: 1;
+        font-weight: 500;
+        color: #333;
       }
       .delete-button {
-        background: #f44336;
+        background: #ff5252;
         color: white;
         border: none;
-        padding: 5px 10px;
+        padding: 6px 12px;
         border-radius: 4px;
         cursor: pointer;
+        font-size: 14px;
+        transition: background 0.2s;
+      }
+      .delete-button:hover {
+        background: #ff1744;
       }
       .completed {
         text-decoration: line-through;
-        color: #888;
+        color: #777;
+        font-weight: normal;
+      }
+      .empty-state {
+        text-align: center;
+        padding: 20px;
+        color: #777;
+        background-color: #f9f9f9;
+        border-radius: 4px;
+        margin: 20px 0;
+      }
+      .task-item.completed {
+        opacity: 0.7;
       }
     `;
     document.head.appendChild(style);
@@ -1146,13 +1403,9 @@ function mountWithVanillaJS(domElement) {
     appDiv.className = 'task-manager-vanilla';
     
     // Add header
-    const header = document.createElement('h1');
-    header.textContent = 'Task Manager';
+    const header = document.createElement('h2');
+    header.textContent = 'Tasks';
     appDiv.appendChild(header);
-    
-    const subheader = document.createElement('p');
-    subheader.textContent = 'Task Manager (Vanilla JS Fallback)';
-    appDiv.appendChild(subheader);
     
     // Create form
     const form = document.createElement('div');
@@ -1161,15 +1414,30 @@ function mountWithVanillaJS(domElement) {
     const input = document.createElement('input');
     input.type = 'text';
     input.className = 'task-input';
-    input.placeholder = 'Enter a task';
+    input.placeholder = 'What needs to be done?';
     form.appendChild(input);
     
     const addButton = document.createElement('button');
     addButton.className = 'add-button';
-    addButton.textContent = 'Add Task';
+    addButton.textContent = 'Add';
     form.appendChild(addButton);
     
     appDiv.appendChild(form);
+    
+    // Create empty state
+    const emptyState = document.createElement('div');
+    emptyState.className = 'empty-state';
+    
+    const emptyText = document.createElement('p');
+    emptyText.textContent = 'No tasks added yet. Add your first task above!';
+    emptyState.appendChild(emptyText);
+    
+    const emptyIcon = document.createElement('span');
+    emptyIcon.textContent = '📝';
+    emptyIcon.style.fontSize = '24px';
+    emptyState.appendChild(emptyIcon);
+    
+    appDiv.appendChild(emptyState);
     
     // Create task list
     const taskList = document.createElement('ul');
@@ -1183,6 +1451,9 @@ function mountWithVanillaJS(domElement) {
     function addTask() {
       const taskText = input.value.trim();
       if (!taskText) return;
+      
+      // Hide empty state
+      emptyState.style.display = 'none';
       
       // Create task item
       const taskItem = document.createElement('li');
@@ -1207,13 +1478,20 @@ function mountWithVanillaJS(domElement) {
       checkbox.addEventListener('change', function() {
         if (this.checked) {
           textSpan.classList.add('completed');
+          taskItem.classList.add('completed');
         } else {
           textSpan.classList.remove('completed');
+          taskItem.classList.remove('completed');
         }
       });
       
       deleteButton.addEventListener('click', function() {
         taskList.removeChild(taskItem);
+        
+        // Show empty state if no tasks
+        if (taskList.children.length === 0) {
+          emptyState.style.display = 'block';
+        }
       });
       
       // Add to list
