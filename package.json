@@ -40,20 +40,5 @@
     "webpack": "^5.50.0",
     "webpack-cli": "^4.8.0",
     "webpack-dev-server": "^4.0.0"
-  },
-  "jest": {
-    "testEnvironment": "jsdom",
-    "moduleNameMapper": {
-      "\\.(css|less|scss|sass)$": "identity-obj-proxy",
-      "^app/(.*)$": "<rootDir>/src/app/$1",
-      "^adapters/(.*)$": "<rootDir>/src/app/modules/adapters/$1"
-    },
-    "setupFilesAfterEnv": [
-      "<rootDir>/src/setupTests.js"
-    ],
-    "testPathIgnorePatterns": [
-      "/node_modules/",
-      "/dist/"
-    ]
   }
 }

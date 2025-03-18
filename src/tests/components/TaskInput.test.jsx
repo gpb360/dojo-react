@@ -1,7 +1,7 @@
-import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import TaskInput from '../../app/modules/components/TaskInput';
+const React = require('react');
+const { render, screen, fireEvent } = require('@testing-library/react');
+const userEvent = require('@testing-library/user-event').default;
+const TaskInput = require('../../app/modules/components/TaskInput').default;
 
 describe('TaskInput Component', () => {
   test('renders input and button', () => {
@@ -12,6 +12,7 @@ describe('TaskInput Component', () => {
   });
 
   test('calls onAddTask when form is submitted with input value', async () => {
+    const user = userEvent.setup();
     const mockAddTask = jest.fn();
     render(<TaskInput onAddTask={mockAddTask} />);
     
@@ -19,7 +20,7 @@ describe('TaskInput Component', () => {
     const submitButton = screen.getByRole('button', { name: /add task/i });
     
     // Type in the input
-    await userEvent.type(input, 'New test task');
+    await user.type(input, 'New test task');
     
     // Submit the form
     fireEvent.click(submitButton);

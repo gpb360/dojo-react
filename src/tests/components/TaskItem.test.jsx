@@ -1,6 +1,6 @@
-import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
-import TaskItem from '../../app/modules/components/TaskItem';
+const React = require('react');
+const { render, screen, fireEvent } = require('@testing-library/react');
+const TaskItem = require('../../app/modules/components/TaskItem').default;
 
 // Mock the Dojo adapter since we want to test in isolation
 jest.mock('../../app/modules/adapters/DojoCheckboxAdapter', () => {
