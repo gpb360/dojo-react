@@ -7,7 +7,10 @@
     "start": "webpack serve --mode development",
     "build": "webpack --mode production",
     "clean": "rimraf dist",
-    "prebuild": "npm run clean"
+    "prebuild": "npm run clean",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
   },
   "dependencies": {
     "dijit": "1.16.4",
@@ -21,14 +24,36 @@
     "@babel/core": "^7.15.0",
     "@babel/preset-env": "^7.15.0",
     "@babel/preset-react": "^7.14.5",
+    "@testing-library/jest-dom": "^5.16.5",
+    "@testing-library/react": "^12.1.5",
+    "@testing-library/user-event": "^14.4.3",
+    "babel-jest": "^29.5.0",
     "babel-loader": "^8.2.2",
     "copy-webpack-plugin": "^13.0.0",
     "css-loader": "^6.2.0",
     "html-webpack-plugin": "^5.3.2",
+    "identity-obj-proxy": "^3.0.0",
+    "jest": "^29.5.0",
+    "jest-environment-jsdom": "^29.5.0",
     "rimraf": "^3.0.2",
     "style-loader": "^3.2.1",
     "webpack": "^5.50.0",
     "webpack-cli": "^4.8.0",
     "webpack-dev-server": "^4.0.0"
+  },
+  "jest": {
+    "testEnvironment": "jsdom",
+    "moduleNameMapper": {
+      "\\.(css|less|scss|sass)$": "identity-obj-proxy",
+      "^app/(.*)$": "<rootDir>/src/app/$1",
+      "^adapters/(.*)$": "<rootDir>/src/app/modules/adapters/$1"
+    },
+    "setupFilesAfterEnv": [
+      "<rootDir>/src/setupTests.js"
+    ],
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "/dist/"
+    ]
   }
 }

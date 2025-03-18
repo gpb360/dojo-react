@@ -24,9 +24,30 @@ plugins: [
 ]
 ```
 
+## Testing
+
+The project includes tests using React Testing Library and Jest. To run the tests:
+
+```
+npm test               # Run tests once
+npm run test:watch     # Run tests in watch mode
+npm run test:coverage  # Run tests with coverage report
+```
+
+Current test coverage includes:
+- Component tests for React components (TaskInput, TaskItem, PureReactTaskList)
+- Tests for DojoButtonAdapter showing adapter pattern testing approach
+- Mocks for Dojo dependencies to isolate component testing
+
+### Test Files:
+- `/src/tests/components/TaskInput.test.jsx`
+- `/src/tests/components/TaskItem.test.jsx`
+- `/src/tests/components/PureReactTaskList.test.jsx`
+- `/src/tests/components/DojoButtonAdapter.test.jsx`
+
 ## Future Enhancements
 
-- [ ] Add comprehensive test coverage for all components
+- [x] Add React Testing Library and Jest for component testing
 - [ ] Create additional Dojo widget adapters for more complex components
 - [ ] Add TypeScript type definitions for adapters
 - [ ] Optimize build configuration for production deployment
