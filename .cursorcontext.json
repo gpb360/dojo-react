@@ -1,0 +1,203 @@
+{
+  "projectMetadata": {
+    "name": "single-spa-dojo",
+    "description": "A helper library that helps implement single-spa registered application lifecycle functions (bootstrap, mount and unmount) for use with Dojo",
+    "purpose": "To enable Dojo applications to work within the single-spa microfrontend framework",
+    "repositoryURL": "https://github.com/single-spa/single-spa-dojo"
+  },
+  "projectStructure": {
+    "files": [
+      {
+        "path": "src/single-spa-dojo.js",
+        "description": "Main library source file implementing lifecycle functions for single-spa integration with Dojo",
+        "purpose": "Implements bootstrap, mount, and unmount lifecycle functions required by single-spa",
+        "explanationInNaturalLanguage": "This is the core file of the library that exports a function which creates single-spa lifecycle methods for Dojo applications. It takes configuration options and returns an object with bootstrap, mount, and unmount functions that can be used with single-spa registration."
+      },
+      {
+        "path": "package.json",
+        "description": "NPM package configuration",
+        "purpose": "Defines package metadata, dependencies, and scripts",
+        "explanationInNaturalLanguage": "Contains package configuration including name, version, dependencies, and export information for the library."
+      },
+      {
+        "path": "README.md",
+        "description": "Library documentation",
+        "purpose": "Provides usage instructions and examples",
+        "explanationInNaturalLanguage": "Documentation explaining how to install and use the single-spa-dojo library, including code examples and configuration options."
+      }
+    ]
+  },
+  "features": [
+    {
+      "name": "Single-spa Lifecycle Implementation",
+      "description": "Implementation of single-spa lifecycle functions for Dojo applications",
+      "entryPoints": ["singleSpaDojo function"],
+      "workflow": "The user imports the library, calls the main function with required options, and exports the returned lifecycle functions",
+      "components": ["Main singleSpaDojo function"],
+      "dependencies": ["@dojo/framework/core/vdom", "@dojo/framework/widget-core/d"],
+      "explanationInNaturalLanguage": "The core feature of this library is providing the necessary lifecycle functions (bootstrap, mount, unmount) required by single-spa to manage Dojo applications within a microfrontend architecture."
+    }
+  ],
+  "components": [
+    {
+      "name": "singleSpaDojo",
+      "type": "function",
+      "responsibility": "Creates single-spa lifecycle functions for Dojo applications",
+      "implementation": "src/single-spa-dojo.js",
+      "inputs": {
+        "renderer": {
+          "type": "function",
+          "required": true,
+          "description": "The renderer function imported from Dojo"
+        },
+        "v": {
+          "type": "function",
+          "required": true,
+          "description": "The function used to render dom elements in Dojo"
+        },
+        "w": {
+          "type": "function",
+          "required": true,
+          "description": "The function used to render dom elements in Dojo"
+        },
+        "appComponent": {
+          "type": "class/function",
+          "required": true,
+          "description": "The class or function for your root Dojo component"
+        },
+        "mountOptions": {
+          "type": "object",
+          "required": false,
+          "description": "An object of Dojo MountOptions",
+          "properties": {
+            "registry": {
+              "type": "object",
+              "required": false,
+              "description": "Dojo registry for component registration"
+            },
+            "domNode": {
+              "type": "HTMLElement",
+              "required": false,
+              "description": "DOM node to mount the Dojo application, provided by single-spa if not specified"
+            },
+            "sync": {
+              "type": "boolean",
+              "required": false,
+              "description": "Whether to render synchronously"
+            }
+          }
+        }
+      },
+      "outputs": {
+        "bootstrap": {
+          "type": "function",
+          "description": "single-spa bootstrap lifecycle function"
+        },
+        "mount": {
+          "type": "function",
+          "description": "single-spa mount lifecycle function"
+        },
+        "unmount": {
+          "type": "function",
+          "description": "single-spa unmount lifecycle function"
+        }
+      },
+      "explanationInNaturalLanguage": "This is the main function exported by the library. It takes configuration options like the Dojo renderer, v and w functions, root component, and mount options, then returns an object with the three lifecycle functions required by single-spa: bootstrap, mount, and unmount."
+    },
+    {
+      "name": "bootstrap",
+      "type": "function",
+      "responsibility": "Initialize the Dojo application",
+      "implementation": "src/single-spa-dojo.js",
+      "inputs": [],
+      "outputs": {
+        "promise": {
+          "type": "Promise",
+          "description": "Promise that resolves when bootstrap is complete"
+        }
+      },
+      "explanationInNaturalLanguage": "The bootstrap function initializes the Dojo application. In the single-spa lifecycle, this function is called once when the application is first loaded."
+    },
+    {
+      "name": "mount",
+      "type": "function",
+      "responsibility": "Mount the Dojo application to the DOM",
+      "implementation": "src/single-spa-dojo.js",
+      "inputs": [
+        {
+          "name": "props",
+          "type": "object",
+          "description": "Properties passed from single-spa root, including a domElement"
+        }
+      ],
+      "outputs": {
+        "promise": {
+          "type": "Promise",
+          "description": "Promise that resolves when mount is complete"
+        }
+      },
+      "explanationInNaturalLanguage": "The mount function renders the Dojo application to the DOM. It uses the Dojo renderer to attach the root component to the specified DOM node."
+    },
+    {
+      "name": "unmount",
+      "type": "function",
+      "responsibility": "Unmount the Dojo application from the DOM",
+      "implementation": "src/single-spa-dojo.js",
+      "inputs": [],
+      "outputs": {
+        "promise": {
+          "type": "Promise",
+          "description": "Promise that resolves when unmount is complete"
+        }
+      },
+      "explanationInNaturalLanguage": "The unmount function removes the Dojo application from the DOM. This ensures proper cleanup when the application is no longer active in the single-spa lifecycle."
+    }
+  ],
+  "apiIntegrationPoints": [
+    {
+      "name": "single-spa registration",
+      "description": "Integration point with single-spa framework",
+      "usage": "The lifecycle functions are exported and used with single-spa's registerApplication method",
+      "explanationInNaturalLanguage": "The library provides the required lifecycle functions that single-spa needs to manage the application within its microfrontend architecture."
+    },
+    {
+      "name": "Dojo renderer integration",
+      "description": "Integration with Dojo's rendering system",
+      "usage": "Uses Dojo's renderer, v, and w functions to create and manage Dojo widgets",
+      "explanationInNaturalLanguage": "The library interfaces with Dojo's rendering system to properly create, mount, and destroy Dojo components within the single-spa lifecycle."
+    }
+  ],
+  "stateManagement": {
+    "approach": "Delegated to Dojo application",
+    "description": "State management is handled by the Dojo application itself",
+    "explanationInNaturalLanguage": "The library doesn't implement state management; it focuses on lifecycle functions while letting the Dojo application handle its own state management."
+  },
+  "errorHandling": {
+    "approach": "Promise-based",
+    "description": "Uses promises to propagate errors up to single-spa",
+    "explanationInNaturalLanguage": "The lifecycle functions return promises that will reject with any errors that occur, allowing single-spa to handle those errors appropriately."
+  },
+  "performanceConsiderations": [
+    {
+      "name": "Efficient mounting",
+      "description": "Optimizes the mounting process based on Dojo's requirements",
+      "explanationInNaturalLanguage": "The library is designed to efficiently mount and unmount Dojo applications to minimize performance impact during application transitions."
+    }
+  ],
+  "securityConsiderations": [
+    {
+      "name": "DOM manipulation",
+      "description": "Uses controlled DOM manipulation through Dojo's renderer",
+      "explanationInNaturalLanguage": "By using Dojo's renderer rather than direct DOM manipulation, the library helps prevent potential security issues related to unsafe DOM operations."
+    }
+  ],
+  "buildAndDeployment": {
+    "installationMethod": "npm install --save single-spa-dojo or yarn add single-spa-dojo",
+    "buildConfiguration": "Compatible with module bundlers like webpack",
+    "explanationInNaturalLanguage": "The library is distributed through npm and can be installed using npm or yarn. It's designed to work with module bundlers to be included in the application bundle."
+  },
+  "usage": {
+    "basicExample": "```javascript\nimport { renderer } from \"@dojo/framework/core/vdom\";\nimport { v, w } from \"@dojo/framework/widget-core/d\";\nimport singleSpaDojo from \"single-spa-dojo\";\nimport App from \"./app\";\n\nconst dojoLifecycles = singleSpaDojo({\n  renderer,\n  v,\n  w,\n  appComponent: App,\n  mountOptions: {\n    registry: myRegistry,\n    domNode: document.getElementById(\"myContainer\"),\n    sync: true,\n  },\n});\n\nexport const bootstrap = dojoLifecycles.bootstrap;\nexport const mount = dojoLifecycles.mount;\nexport const unmount = dojoLifecycles.unmount;\n```",
+    "explanationInNaturalLanguage": "This example shows how to use the single-spa-dojo library to create lifecycle functions for a Dojo application. The user imports necessary Dojo functions, creates lifecycle functions using the library, and exports them for single-spa to use."
+  }
+} 

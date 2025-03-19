@@ -1,152 +1,125 @@
-# Dojo to React Migration Toolkit (DojotoReact)
+# Dojo to React Migration Monorepo
 
-**DojotoReact** is a comprehensive toolkit and reference implementation for migrating legacy Dojo applications to modern React using a microfrontend architecture with single-spa. It demonstrates a practical, incremental migration path that allows Dojo and React components to coexist during the transition.
+A comprehensive monorepo for migrating from Dojo to React using single-spa microfrontends.
 
-Key features:
-- Real Dojo widget adapters with proper lifecycle management
-- Three migration phases: Dojo → Hybrid React+Dojo → Pure React
-- Microfrontend architecture using single-spa
-- Complete migration strategy with documentation
+## Overview
 
-This repository serves as both a working example and a blueprint for organizations migrating large-scale Dojo applications to React.
+This monorepo contains adapters and utilities that help migrate Dojo applications to React using the single-spa microfrontend framework. It allows you to run Dojo and React applications side by side during the migration process.
 
----
+## Repository Structure
 
-# Dojo to React Migration with single-spa
+```
+dojo-to-react-monorepo/
+├── packages/
+│   ├── single-spa-dojo/      - Dojo adapter for single-spa
+│   ├── single-spa-react/     - React adapter for single-spa
+│   └── shared/               - Shared utilities for migration
+├── examples/
+│   ├── dojo-app/             - Example pure Dojo application
+│   ├── react-app/            - Example pure React application
+│   └── hybrid-app/           - Example hybrid Dojo+React application
+```
 
-This project demonstrates a comprehensive migration path from a legacy Dojo application to React using the single-spa microfrontend framework. It allows you to run Dojo and React applications side by side while gradually migrating components.
+## Packages
 
-## Project Overview
+### single-spa-dojo
 
-This project showcases a complete migration strategy with three distinct stages:
+A helper library that implements single-spa lifecycle functions (bootstrap, mount, and unmount) for Dojo applications.
+
+```javascript
+import { renderer } from "@dojo/framework/core/vdom";
+import { v, w } from "@dojo/framework/widget-core/d";
+import singleSpaDojo from "@dojotoreact/single-spa-dojo";
+import App from "./app";
+
+const dojoLifecycles = singleSpaDojo({
+  renderer,
+  v,
+  w,
+  appComponent: App,
+  mountOptions: {
+    registry: myRegistry,
+    domNode: document.getElementById("myContainer"),
+    sync: true,
+  },
+});
+
+export const bootstrap = dojoLifecycles.bootstrap;
+export const mount = dojoLifecycles.mount;
+export const unmount = dojoLifecycles.unmount;
+```
+
+### single-spa-react
+
+A helper library that implements single-spa lifecycle functions for React applications.
+
+```javascript
+import React from 'react';
+import ReactDOM from 'react-dom';
+import singleSpaReact from "@dojotoreact/single-spa-react";
+import App from "./App";
+
+const reactLifecycles = singleSpaReact({
+  React,
+  ReactDOM,
+  rootComponent: App,
+  errorBoundary(err, info, props) {
+    return <div>Error occurred: {err.message}</div>;
+  }
+});
+
+export const bootstrap = reactLifecycles.bootstrap;
+export const mount = reactLifecycles.mount;
+export const unmount = reactLifecycles.unmount;
+```
+
+### shared
+
+Shared utilities for Dojo to React migration.
+
+## Migration Strategy
+
+This monorepo supports a three-phase migration strategy:
 
 1. **Dojo App**: The original Dojo application (starting point)
-2. **Hybrid React+Dojo**: A React application that uses real Dojo widgets through proper adapters (transition phase)
-3. **Pure React App**: A fully migrated React application with modern patterns (end goal)
+2. **Hybrid React+Dojo**: React application that uses real Dojo widgets through adapters
+3. **Pure React App**: Fully migrated React application (end goal)
 
-## Enhanced Project Structure
+## Getting Started
 
-```
-├── src/
-│   ├── root-config.js (single-spa root configuration)
-│   ├── app/
-│   │   ├── modules/
-│   │   │   ├── dojo-app.js (Original Dojo application)
-│   │   │   ├── hybrid-react-app.js (React app with real Dojo widgets)
-│   │   │   ├── simple-react-app.js (Fully migrated React application)
-│   │   │   ├── adapters/
-│   │   │   │   ├── DojoAdapterRegistry.js (Centralized adapter registry)
-│   │   │   │   ├── DojoButtonAdapter.jsx (React wrapper for Dojo Button)
-│   │   │   │   ├── DojoTextBoxAdapter.jsx (React wrapper for Dojo TextBox)
-│   │   │   │   └── DojoCheckboxAdapter.jsx (React wrapper for Dojo Checkbox)
-│   │   │   └── components/
-│   │   │       └── PureReactTaskList.jsx (Example of fully migrated component)
-├── css/
-│   └── shared-styles.css (Shared styles for all applications)
-├── index.html (Main HTML file)
-├── MIGRATION.md (Detailed migration strategy documentation)
-├── webpack.config.js
-└── package.json
+### Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/dojo-to-react-monorepo.git
+cd dojo-to-react-monorepo
+
+# Install dependencies using pnpm
+pnpm install
+
+# Build all packages
+pnpm build
 ```
 
-## Migration Applications
+### Running Examples
 
-This project includes three main applications that demonstrate different phases of the migration journey:
+```bash
+# Run the Dojo example
+cd examples/dojo-app
+pnpm start
 
-1. **Dojo App**: The original Dojo application that we're migrating from
-   - Pure Dojo implementation
-   - Uses direct DOM manipulation
-   - Traditional Dojo event handling
+# Run the React example
+cd examples/react-app
+pnpm start
 
-2. **Hybrid React+Dojo App**: Transition phase application that shows how to integrate real Dojo widgets in React
-   - React application structure
-   - Uses real Dojo widgets wrapped in React components
-   - Proper lifecycle management of Dojo widgets
-   - Two-way data binding between React state and Dojo widgets
-   - Error boundaries with fallback UI
-
-3. **Simple React App**: Fully migrated React application
-   - Pure React implementation
-   - Modern React patterns (hooks, memo, etc.)
-   - Performance optimizations
-   - Clean component architecture
-
-## Key Features
-
-- **Real Dojo Widget Integration**: Proper wrapper components that use actual Dojo widgets, not just styled HTML
-- **Complete Lifecycle Management**: Proper initialization and destruction of Dojo widgets
-- **Two-way Data Binding**: Synchronization between React state and Dojo widget properties
-- **Error Handling**: Robust error boundaries with fallback UI components
-- **Migration Documentation**: Comprehensive strategy for large-scale applications
-
-## Setup and Installation
-
-1. Clone the repository
-2. Install dependencies: `npm install`
-3. Start the development server: `npm start`
-4. Open a browser and navigate to `http://localhost:9000`
-
-## How the Migration Works
-
-### Phase 1: Adapter Creation
-
-The first step is to create proper React adapters for Dojo widgets. These adapters:
-
-1. Initialize real Dojo widgets when a React component mounts
-2. Handle proper cleanup when the React component unmounts
-3. Update Dojo widget properties when React props change
-4. Bubble up Dojo events to React event handlers
-5. Provide fallback UI when widgets fail to load
-
-Example adapter:
-
-```jsx
-const DojoButtonAdapter = ({ label, onClick, disabled = false }) => {
-  const containerRef = useRef(null);
-  const widgetRef = useRef(null);
-  
-  // Initialize widget on mount
-  useEffect(() => {
-    // Widget initialization logic...
-    
-    return () => {
-      // Cleanup logic...
-    };
-  }, []);
-  
-  // Update widget when props change
-  useEffect(() => {
-    if (widgetRef.current) {
-      widgetRef.current.set('label', label);
-      widgetRef.current.set('disabled', disabled);
-    }
-  }, [label, disabled]);
-  
-  return <div ref={containerRef}></div>;
-};
+# Run the hybrid example
+cd examples/hybrid-app
+pnpm start
 ```
 
-### Phase 2: Hybrid Application
+## Contributing
 
-The hybrid application demonstrates how to:
-
-1. Use React for overall application structure
-2. Integrate Dojo widgets where needed
-3. Manage state in React and pass it to Dojo widgets
-4. Handle Dojo widget events in React components
-
-### Phase 3: Pure React Implementation
-
-The final stage shows a fully migrated component with:
-
-1. Modern React patterns (functional components, hooks)
-2. Performance optimizations (memo, useCallback, useMemo)
-3. Clean component architecture
-4. No Dojo dependencies
-
-## Detailed Migration Strategy
-
-See the [MIGRATION.md](MIGRATION.md) file for a comprehensive step-by-step guide on migrating a large-scale Dojo application to React.
+Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
 
